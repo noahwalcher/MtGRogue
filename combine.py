@@ -65,6 +65,7 @@ def combine(cardOne, cardTwo):
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
 typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
 bodyFont = ImageFont.truetype("Fonts/mplantin.ttf", size=14)
+flipsideTitleFont = ImageFont.truetype("Fonts/mplantin.ttf", size=11)
 
 standardTitleCoord = ()
 offsetTitleCoord = (59, 28)
@@ -87,7 +88,7 @@ adventureBodyCoord = ()
 planeswalkerBodyCoord = ()
 aftermathBodyCoord = ()
 
-flipsideTitleCoord = ()
+flipsideTitleCoord = (27, 473)
 
 
 def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
@@ -111,14 +112,10 @@ def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
         lines[index:index+1] = wrappedLine
     text_bbox = draw.textbbox((0,0), "\n".join(lines), font)
     textHeight = text_bbox[3] - text_bbox[1]
-    print("Before if")
     if textHeight <= (y2 - y):
-        print("Inside height limit")
         draw.text((x, y), "\n".join(lines), font=font, fill="black")
-        print("Right before return true")
         return True
     else:
-        print("inside else")
         if fontSize > 10: #This is the minimum font size that can be adjusted
             return draw_text_within_bounding_box(draw, text, fontPath, fontSize - 1, bounding_box)
         else:
@@ -126,27 +123,32 @@ def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
             return False
         
 #Pass the face in if card is multifaced
-def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, flipsideTitleCoord = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None):
+#TODO add cmc to card
+def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
     draw.text(typeCoord, card["type_line"], font=typeFont, fill="black")
     itFits = draw_text_within_bounding_box(draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
+    print(f"flipside title coord -> {flipsideTitleCoord}")
+    print(f"card 2 -> {card2}")
     if flipsideTitleCoord and card2:
+        print('Made it into the if for flipside')
         #TODO also need to add in cmc on flipside panel
         if "Back" in framePath:
-            draw.text(flipsideTitleCoord, card2["name"], font=typeFont, fill="black")
+            draw.text(flipsideTitleCoord, card2["name"], font=flipsideTitleFont, fill="black")
         else:
-            draw.text(flipsideTitleCoord, card2["name"], font=typeFont, fill="white")
+            draw.text(flipsideTitleCoord, card2["name"], font=flipsideTitleFont, fill="white")
 
     if card2 and title2Coord and type2Coord and text2Coord:
         draw.text(title2Coord, card2["name"], font=titleFont, fill="black")
         draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
         itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
     #extend frame based on prior frame
-    if "Fuse" in framePath and (not itFits or not itFits2):
-        createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, flipsideTitleCoord=flipsideTitleCoord, card2=card2)
-        createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, flipsideTitleCoord=flipsideTitleCoord, card2=card)
+    if "Fuse" in framePath and (itFits or not itFits2):
+        print("Was fuse but making mdfc")
+        createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card2)
+        createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
     elif ():#TODO handle all cases where card needs extended body room
         print()
     else:
@@ -182,11 +184,9 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
     }
 
 def normalNormal(cardOne, cardTwo, id):
-    print("In normalNormal")
     typeLineOne = cardOne['mainCard'][14]
     typeLineTwo = cardTwo['mainCard'][14]
     if ('Instant' in typeLineOne and 'Instant' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Sorcery' in typeLineTwo):
-        print("In double instant/sorcery")
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         #def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, flipsideTitleCoord = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None):
         createCardImage(card["card_faces"][0], "Frames/Fuse.png", fuseTitleCoord1, fuseTypeCoord1, fuseBodyCoord1, card2 = card["card_faces"][1], title2Coord=fuseTitleCoord2, type2Coord=fuseTypeCoord2, text2Coord=fuseBodyCoord2 )
