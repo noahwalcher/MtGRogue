@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from PIL import Image, ImageDraw, ImageFont
 
 def combine(cardOne, cardTwo):
@@ -10,9 +11,6 @@ def combine(cardOne, cardTwo):
             id = int(file.read().strip())
     else:
             id = 1
-
-    print(f"Counter number: {id}")
-
     if (cardOne['mainCard'][1] == "normal" and "Planeswalker" not in cardOne['mainCard'][14]):
         if (cardTwo['mainCard'][1] == "normal" and "Planeswalker" not in cardTwo['mainCard'][14]):
             normalNormal(cardOne, cardTwo, id)
@@ -88,6 +86,12 @@ adventureBodyCoord = ()
 planeswalkerBodyCoord = ()
 aftermathBodyCoord = ()
 
+standardManaCoord = (291, 33)
+fuseManaCoord1 = ()
+fuseManaCoord2 = ()
+adventureManaCoord = ()
+aftermathManaCoord = ()
+
 flipsideTitleCoord = (27, 473)
 
 
@@ -122,12 +126,43 @@ def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
             print("Couldn't fit within the bounding box")
             return False
         
+def drawManaCost(draw, frame, mana_cost, position):
+    # Define the path to mana symbols
+    mana_symbol_path = "ManaSymbols/"
+    
+    mana_cost = mana_cost.replace("/", "")
+    # Regular expression to find mana symbols
+    mana_symbols = re.findall(r'{(.*?)}', mana_cost)
+
+    # Define the size and spacing of mana symbols
+    mana_symbol_size = (20, 20)
+    spacing = 2
+    
+    # Starting position
+    x, y = position
+
+    for symbol in mana_symbols:
+        # Load the mana symbol image
+        mana_image_path = f"{mana_symbol_path}{symbol}.png"
+        mana_image = Image.open(mana_image_path).resize(mana_symbol_size)
+
+        # Paste the mana symbol image onto the card
+        frame.paste(mana_image, (x, y), mana_image)
+
+        # Move to the next position
+        x += mana_symbol_size[0] + spacing
+
+    # Save or show the modified card image
+    frame.save("test/modified_card.png")
+
+
 #Pass the face in if card is multifaced
 #TODO add cmc to card
 def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
+    drawManaCost(draw, frame, card["mana_cost"], standardManaCoord)
     draw.text(typeCoord, card["type_line"], font=typeFont, fill="black")
     itFits = draw_text_within_bounding_box(draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
     print(f"flipside title coord -> {flipsideTitleCoord}")
