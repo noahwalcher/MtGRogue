@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import requests
 import shutil
+import combine
 
 def connect_db(db_name='mtg_cards.db'):
     return sqlite3.connect(db_name)
@@ -148,7 +149,11 @@ def main():
     # download_card_images(card_names)
 
     card_name = input("Enter the name of the card: ")
-    print(fetch_card_by_name(card_name))
+    cardOne = fetch_card_by_name(card_name)
+    card_name = input("Enter the name of the 2nd card: ")
+    cardTwo = fetch_card_by_name(card_name)
+
+    combine.combine(cardOne, cardTwo)
 
 if __name__ == '__main__':
     main()
