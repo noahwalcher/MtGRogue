@@ -224,13 +224,53 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         print()
     else:
         print("Saving")
+        #TODO Add card object to database
         frame.save(f"test/{card["name"]}.png")
+
+def createSingleFaceCardObject(cardOne, cardTwo, id):
+    newSuperType = ""
+    if "Basic" in cardOne['mainCard'][14] or "Basic" in cardTwo['mainCard'][14]:
+        newSuperType += " Basic"
+    elif "Legendary" in cardOne['mainCard'][14] or "Legendary" in cardTwo['mainCard'][14]:
+        newSuperType += " Legendary"
+
+    newTypeLine = ""
+    if "Artifact" in cardOne['mainCard'][14] or "Artifact" in cardTwo['mainCard'][14]:
+        newTypeLine += " Artifact"
+    elif "Enchantment" in cardOne['mainCard'][14] or "Enchantment" in cardTwo['mainCard'][14]:
+        newTypeLine += " Enchantment"
+    elif "Land" in cardOne['mainCard'][14] or "Land" in cardTwo['mainCard'][14]:
+        newTypeLine += " Land"
+    elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
+        newTypeLine += " Creature"
+
+    newSubType = ""
+    if "Swamp" in cardOne['mainCard'][14] or "Swamp" in cardTwo['mainCard'][14]:
+        newSubType += " Swamp"
+    elif "Equipment" in cardOne['mainCard'][14] or "Equipment" in cardTwo['mainCard'][14]:
+        newSubType += " Equipment"
+    elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
+        newSubType += " Zombie"
+
+    newFullTypeLine = "{newSuperType.strip()} {newTypeLine.strip()} — {newSubType.strip()}"
+    if "Equipment" in newFullTypeLine and "Creature" in newFullTypeLine:
+        print()
+    else:
+        
+        return {
+            "oracle_id": id,
+            "name": f"No. {id}",
+            "mana_cost": "",
+            "cmc": "",
+            "type_line": f"{cardOne['mainCard'][14]} // {cardTwo['mainCard'][14]}",
+            "colors": "",
+        }
+    
 
 def createTwoFaceCardObject(cardOne, cardTwo, id):
     return {
         "oracle_id": id,
         "name": f"No. {id}",
-        "layout": "fuse",
         "mana_cost": "",
         "cmc": "",
         "type_line": f"{cardOne['mainCard'][14]} // {cardTwo['mainCard'][14]}",
@@ -267,8 +307,9 @@ def normalNormal(cardOne, cardTwo, id):
             card = createTwoFaceCardObject(cardOne, cardTwo, id)
         else:
             card = createTwoFaceCardObject(cardTwo, cardOne, id)
-        print("about to call create card image")
         createCardImage(card["card_faces"][0], "Frames/Aftermath.png", standardTitleCoord, aftermathTypeCoord1, aftermathBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=aftermathTitleCoord, type2Coord=aftermathTypeCoord2, text2Coord=aftermathBodyCoord2, manaCoord2=aftermathManaCoord)
+    elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
+        print()#TODO 
     else:
         print('Two Permanents')
 
