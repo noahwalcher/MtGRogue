@@ -182,6 +182,7 @@ def getMainType(typeLine):
         return ""
 
 #Pass the face in if card is multifaced
+#TODO draw mana symbols in text of card
 def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
@@ -229,9 +230,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
 
 def createSingleFaceCardObject(cardOne, cardTwo, id):
     newSuperType = ""
-    if "Basic" in cardOne['mainCard'][14] or "Basic" in cardTwo['mainCard'][14]:
-        newSuperType += " Basic"
-    elif "Legendary" in cardOne['mainCard'][14] or "Legendary" in cardTwo['mainCard'][14]:
+    if "Legendary" in cardOne['mainCard'][14] or "Legendary" in cardTwo['mainCard'][14]:
         newSuperType += " Legendary"
 
     newTypeLine = ""
@@ -239,31 +238,74 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
         newTypeLine += " Artifact"
     elif "Enchantment" in cardOne['mainCard'][14] or "Enchantment" in cardTwo['mainCard'][14]:
         newTypeLine += " Enchantment"
-    elif "Land" in cardOne['mainCard'][14] or "Land" in cardTwo['mainCard'][14]:
-        newTypeLine += " Land"
     elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
         newTypeLine += " Creature"
 
     newSubType = ""
-    if "Swamp" in cardOne['mainCard'][14] or "Swamp" in cardTwo['mainCard'][14]:
-        newSubType += " Swamp"
-    elif "Equipment" in cardOne['mainCard'][14] or "Equipment" in cardTwo['mainCard'][14]:
+    if "Equipment" in cardOne['mainCard'][14] or "Equipment" in cardTwo['mainCard'][14]:
         newSubType += " Equipment"
     elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
         newSubType += " Zombie"
 
     newFullTypeLine = "{newSuperType.strip()} {newTypeLine.strip()} — {newSubType.strip()}"
     if "Equipment" in newFullTypeLine and "Creature" in newFullTypeLine:
-        print()
-    else:
-        
+        if "Equipment" in cardOne['mainCard'][14]:
+            cardTwo, cardOne = cardOne, cardTwo
+        oracle = cardOne['mainCard'][11]
+        equipmentOracle = cardTwo['mainCard'][11]
+        equipmentLines = equipmentOracle.split("\n")
+        equipCost = ""
+        for line in equipmentLines:
+            if line.startswith('Equip '):
+                equipCost = line.replace("Equip ", "", 1)
+        equipmentLinesSansEquip = [s for s in equipmentLines if not s.startswith("Equip ")]
+        reducedLinesSansEquip = "\n".join(equipmentLinesSansEquip)
+        reconfigureText = f"\nReconfigure {equipCost}\nEquipped Creature has all abilities this card would have as a creature except Reconfigure.\n{reducedLinesSansEquip}"
+        oracle += reconfigureText
         return {
             "oracle_id": id,
             "name": f"No. {id}",
-            "mana_cost": "",
-            "cmc": "",
-            "type_line": f"{cardOne['mainCard'][14]} // {cardTwo['mainCard'][14]}",
-            "colors": "",
+            "mana_cost": cardOne['mainCard'][9],
+            "cmc": cardOne['mainCard'][4],
+            "type_line": f"{newFullTypeLine}",
+            "oracle_text": oracle,
+            "power": cardOne['mainCard'][12],
+            "toughness": cardOne['mainCard'][13]
+        }
+    else:
+        cmc = cardOne['mainCard'][4] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][4]
+        manaCost = cardOne['mainCard'][9] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][9]
+        oracle = f"{cardOne['mainCard'][11]}\n{cardTwo['mainCard'][11]}"
+        power1 = cardOne['mainCard'][12]
+        power2 = cardTwo['mainCard'][12]
+        toughness1 = cardOne['mainCard'][13]
+        toughness2 = cardTwo['mainCard'][13]
+        power = ""
+        toughness = ""
+
+        if power1 is not None and power2 is not None:
+            power = int(power1) + int(power2)
+        elif power1 is not None:
+            power = int(power1)
+        elif power2 is not None:
+            power = int(power2)
+
+        if toughness1 is not None and toughness2 is not None:
+            toughness = int(toughness1) + int(toughness2)
+        elif toughness1 is not None:
+            toughness = int(toughness1)
+        elif toughness2 is not None:
+            toughness = int(toughness2)
+                
+        return {
+            "oracle_id": id,
+            "name": f"No. {id}",
+            "mana_cost": manaCost,
+            "cmc": cmc,
+            "type_line": f"{newFullTypeLine}",
+            "oracle_text": oracle,
+            "power": power,
+            "toughness": toughness
         }
     
 
@@ -309,9 +351,12 @@ def normalNormal(cardOne, cardTwo, id):
             card = createTwoFaceCardObject(cardTwo, cardOne, id)
         createCardImage(card["card_faces"][0], "Frames/Aftermath.png", standardTitleCoord, aftermathTypeCoord1, aftermathBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=aftermathTitleCoord, type2Coord=aftermathTypeCoord2, text2Coord=aftermathBodyCoord2, manaCoord2=aftermathManaCoord)
     elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
-        print()#TODO 
+        print()#TODO Adventure
+    elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
+        print()#TODO MDFC
     else:
-        print('Two Permanents')
+        card = createSingleFaceCardObject(cardOne, cardTwo, id)
+        createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
 
 
 def normalSaga(cardOne, cardTwo, id):
