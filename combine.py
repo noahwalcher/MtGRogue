@@ -74,13 +74,15 @@ planeswalkerTitleCoord = ()
 aftermathTitleCoord = (295, 30)
 
 standardTypeCoord = (33, 298)
+fullTextTypeCoord = (33, 65)
 fuseTypeCoord1 = (48, 210)
 fuseTypeCoord2 = (289, 210)
 adventureTypeCoord = ()
 aftermathTypeCoord1 = (31, 185)
 aftermathTypeCoord2 = (296, 177)
 
-standardBodyCoord = (33, 332, 339, 469)
+standardBodyCoord = (33, 332, 339, 480)
+fullTextBodyCoord = (33, 98, 339, 467)
 fuseBodyCoord1 = (48, 237, 251, 330)
 fuseBodyCoord2 = (289, 237, 492, 330)
 adventureBodyCoord = ()
@@ -121,10 +123,12 @@ def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
     text_bbox = draw.textbbox((0,0), "\n".join(lines), font)
     textHeight = text_bbox[3] - text_bbox[1]
     if textHeight <= (y2 - y):
+        print(f"Printed at {fontSize}")
         draw.text((x, y), "\n".join(lines), font=font, fill="black")
         return True
     else:
         if fontSize > 10: #This is the minimum font size that can be adjusted
+            print(f"Couldn't fit at {fontSize}. Reducing")
             return draw_text_within_bounding_box(draw, text, fontPath, fontSize - 1, bounding_box)
         else:
             print("Couldn't fit within the bounding box")
@@ -220,6 +224,8 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
     elif "Aftermath" in framePath and (not itFits or not itFits2):
         createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card2)
         createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
+    elif "Frames/Standard.png" == framePath and not itFits:
+        createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
     elif ():#TODO handle all cases where card needs extended body room
         #Might be able to combine a lot of these. Need to see once we get further
         print()
@@ -236,18 +242,18 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
     newTypeLine = ""
     if "Artifact" in cardOne['mainCard'][14] or "Artifact" in cardTwo['mainCard'][14]:
         newTypeLine += " Artifact"
-    elif "Enchantment" in cardOne['mainCard'][14] or "Enchantment" in cardTwo['mainCard'][14]:
+    if "Enchantment" in cardOne['mainCard'][14] or "Enchantment" in cardTwo['mainCard'][14]:
         newTypeLine += " Enchantment"
-    elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
+    if "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
         newTypeLine += " Creature"
 
     newSubType = ""
     if "Equipment" in cardOne['mainCard'][14] or "Equipment" in cardTwo['mainCard'][14]:
         newSubType += " Equipment"
-    elif "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
+    if "Creature" in cardOne['mainCard'][14] or "Creature" in cardTwo['mainCard'][14]:
         newSubType += " Zombie"
 
-    newFullTypeLine = "{newSuperType.strip()} {newTypeLine.strip()} — {newSubType.strip()}"
+    newFullTypeLine = f"{newSuperType.strip()} {newTypeLine.strip()} — {newSubType.strip()}"
     if "Equipment" in newFullTypeLine and "Creature" in newFullTypeLine:
         if "Equipment" in cardOne['mainCard'][14]:
             cardTwo, cardOne = cardOne, cardTwo
@@ -273,13 +279,22 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
             "toughness": cardOne['mainCard'][13]
         }
     else:
+        print("Not reconfigure")
         cmc = cardOne['mainCard'][4] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][4]
         manaCost = cardOne['mainCard'][9] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][9]
         oracle = f"{cardOne['mainCard'][11]}\n{cardTwo['mainCard'][11]}"
-        power1 = cardOne['mainCard'][12]
-        power2 = cardTwo['mainCard'][12]
-        toughness1 = cardOne['mainCard'][13]
-        toughness2 = cardTwo['mainCard'][13]
+        power1 = "0"
+        power2 = "0"
+        toughness1 = "0"
+        toughness2 = "0"
+        if cardOne['mainCard'][12]:
+            power1 = cardOne['mainCard'][12]
+        if cardTwo['mainCard'][12]:
+            power2 = cardTwo['mainCard'][12]
+        if cardOne['mainCard'][13]:
+            toughness1 = cardOne['mainCard'][13]
+        if cardTwo['mainCard'][13]:
+            toughness2 = cardTwo['mainCard'][13]
         power = ""
         toughness = ""
 
