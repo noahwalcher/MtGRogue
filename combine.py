@@ -69,7 +69,7 @@ standardTitleCoord = (32, 28)
 offsetTitleCoord = (59, 28)
 fuseTitleCoord1 = (49, 23)
 fuseTitleCoord2 = (290, 23)
-adventureTitleCoord = ()
+adventureTitleCoord = (32, 331)
 planeswalkerTitleCoord = ()
 aftermathTitleCoord = (295, 30)
 
@@ -77,7 +77,7 @@ standardTypeCoord = (33, 298)
 fullTextTypeCoord = (33, 65)
 fuseTypeCoord1 = (48, 210)
 fuseTypeCoord2 = (289, 210)
-adventureTypeCoord = ()
+adventureTypeCoord = (33, 355)
 aftermathTypeCoord1 = (31, 185)
 aftermathTypeCoord2 = (296, 177)
 
@@ -85,7 +85,8 @@ standardBodyCoord = (33, 332, 339, 480)
 fullTextBodyCoord = (33, 98, 339, 467)
 fuseBodyCoord1 = (48, 237, 251, 330)
 fuseBodyCoord2 = (289, 237, 492, 330)
-adventureBodyCoord = ()
+adventureBodyCoord1 = (194, 332, 347, 479)
+adventureBodyCoord2 = (33, 379, 183, 479)
 planeswalkerBodyCoord = ()
 aftermathBodyCoord1 = (33, 218, 342, 275)
 aftermathBodyCoord2 = (303, 260, 473, 342)
@@ -95,7 +96,7 @@ standardManaCoord = (346, 31, 17, 18)
 fuseManaCoord1 = (256, 28, 15, 16)
 fuseManaCoord2 = (498, 28, 15, 16)
 MDFCManaCoord = (160, 472, 11, 11)
-adventureManaCoord = ()
+adventureManaCoord = (179, 333, 15, 16)
 aftermathManaCoord = (476, 34, 17, 18)
 
 flipsideTitleCoord = (27, 473)
@@ -201,8 +202,8 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         else:
             draw.text(flipsideTitleCoords, getMainType(card2["type_line"]), font=flipsideTitleFont, fill="white")
             drawManaCost(frame, card2["mana_cost"], MDFCManaCoord)
-
     if card2 and title2Coord and type2Coord and text2Coord and manaCoord2:
+        print("This card has 2 faces!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if "Aftermath" in framePath:
             rotatedFrame = frame.rotate(90, expand=True)
             draw = ImageDraw.Draw(rotatedFrame)
@@ -212,19 +213,22 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
             itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
             frame = rotatedFrame.rotate(-90, expand=True)
         else:
-            draw.text(title2Coord, card2["name"], font=titleFont, fill="black")
-            draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
-            drawManaCost(frame, card2["mana_cost"], manaCoord2)
-            itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
+            if ("Adventure" in framePath):
+                draw.text(title2Coord, card2["name"], font=typeFont, fill="black")
+                draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
+                drawManaCost(frame, card2["mana_cost"], manaCoord2)
+                itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
+            else:
+                draw.text(title2Coord, card2["name"], font=titleFont, fill="black")
+                draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
+                drawManaCost(frame, card2["mana_cost"], manaCoord2)
+                itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
     #extend frame based on prior frame
-    if "Fuse" in framePath and (not itFits or not itFits2):
-        print("Was fuse but making mdfc")
+    if ("Fuse" in framePath or "Aftermath" in framePath) and (not itFits or not itFits2):
+        print("Didn't fit. Making mdfc")
         createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card2)
         createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
-    elif "Aftermath" in framePath and (not itFits or not itFits2):
-        createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card2)
-        createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
-    elif "Frames/Standard.png" == framePath and not itFits:
+    elif ("Frames/Standard.png" == framePath) and not itFits:
         createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
     elif ():#TODO handle all cases where card needs extended body room
         #Might be able to combine a lot of these. Need to see once we get further
@@ -366,7 +370,11 @@ def normalNormal(cardOne, cardTwo, id):
             card = createTwoFaceCardObject(cardTwo, cardOne, id)
         createCardImage(card["card_faces"][0], "Frames/Aftermath.png", standardTitleCoord, aftermathTypeCoord1, aftermathBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=aftermathTitleCoord, type2Coord=aftermathTypeCoord2, text2Coord=aftermathBodyCoord2, manaCoord2=aftermathManaCoord)
     elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
-        print()#TODO Adventure
+        if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne):
+            cardOne, cardTwo = cardTwo, cardOne
+        print(f"card one -> {cardOne}")
+        card = createTwoFaceCardObject(cardOne, cardTwo, id)
+        createCardImage(card["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
         print()#TODO MDFC
     else:
