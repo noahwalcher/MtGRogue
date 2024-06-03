@@ -152,6 +152,7 @@ def main():
     cardOne = fetch_card_by_name(card_name)
     card_name = input("Enter the name of the 2nd card: ")
     cardTwo = fetch_card_by_name(card_name)
+    print(f"INITIAL CARD ONE HERE --------------> {cardOne}")
 
     combine.combine(cardOne, cardTwo)
 

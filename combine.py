@@ -78,6 +78,7 @@ fuseTypeCoord2 = (289, 210)
 adventureTypeCoord = (33, 355)
 aftermathTypeCoord1 = (31, 185)
 aftermathTypeCoord2 = (296, 177)
+sagaTypeCoord = (33, 445)
 
 standardBodyCoord = (33, 332, 339, 480)
 fullTextBodyCoord = (33, 98, 339, 467)
@@ -88,6 +89,7 @@ adventureBodyCoord2 = (33, 379, 183, 479)
 planeswalkerBodyCoord = ()
 aftermathBodyCoord1 = (33, 218, 342, 275)
 aftermathBodyCoord2 = (303, 260, 473, 342)
+saga2ChapterBodyCoord = ((44, 158, 182, 293), (44, 299, 182, 435))
 
 #3rd/4th number are the size of the mana symbols
 standardManaCoord = (346, 31, 17, 18)
@@ -208,7 +210,7 @@ def getMainType(typeLine):
   
 
 #Pass the face in if card is multifaced
-def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
+def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, backCard = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
@@ -218,14 +220,20 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         box = Image.open("ManaSymbols/clpt.png").resize((81, 42))
         frame.paste(box, (274, 466), box)
         draw.text((316, 483), f"{card['power']}/{card['toughness']}", font=titleFont, fill="black", align="center", anchor="mm")
-    itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
-    if flipsideTitleCoords and card2:
+    if ("Saga" in framePath):
+        chapters = card["oracle_text"].split("\n")[1:]
+        for index, chapter in enumerate(chapters):
+            chapter = chapter.split(" — ")[1]
+            draw_text_within_bounding_box(frame, draw, chapter, "Fonts/mplantin.ttf", 14, textCoord[index])
+    else:
+        itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
+    if flipsideTitleCoords and backCard:
         if "Back" in framePath:
-            draw.text(flipsideTitleCoords, getMainType(card2["type_line"]), font=flipsideTitleFont, fill="black")
-            drawManaCost(frame, card2["mana_cost"], MDFCManaCoord)
+            draw.text(flipsideTitleCoords, getMainType(backCard["type_line"]), font=flipsideTitleFont, fill="black")
+            drawManaCost(frame, backCard["mana_cost"], MDFCManaCoord)
         else:
-            draw.text(flipsideTitleCoords, getMainType(card2["type_line"]), font=flipsideTitleFont, fill="white")
-            drawManaCost(frame, card2["mana_cost"], MDFCManaCoord)
+            draw.text(flipsideTitleCoords, getMainType(backCard["type_line"]), font=flipsideTitleFont, fill="white")
+            drawManaCost(frame, backCard["mana_cost"], MDFCManaCoord)
     if card2 and title2Coord and type2Coord and text2Coord and manaCoord2:
         if "Aftermath" in framePath:
             rotatedFrame = frame.rotate(90, expand=True)
@@ -345,7 +353,7 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
             "mana_cost": manaCost,
             "cmc": cmc,
             "type_line": f"{newFullTypeLine}",
-            "oracle_text": oracle.replace(cardOne['mainCard'][10], newName),
+            "oracle_text": oracle.replace(cardOne['mainCard'][10], newName).replace(cardTwo['mainCard'][10], newName),
             "power": power,
             "toughness": toughness
         }
@@ -381,7 +389,8 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
                 "type_line": cardOne['mainCard'][14],
                 "oracle_text": cardOne['mainCard'][11].replace(cardOne['mainCard'][10], newName),
                 "power": power1,
-                "toughness": toughness1
+                "toughness": toughness1,
+                "id": id
             },
             {
                 "object": "card_face",
@@ -390,10 +399,78 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
                 "type_line": cardTwo['mainCard'][14],
                 "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameTwo),
                 "power": power2,
-                "toughness": toughness2
+                "toughness": toughness2,
+                "id": id
             }
         ]
     }
+
+def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
+    newName = f"No. {id} - A"
+    newNameTwo = f"No. {id} - B"
+    newNameThree = f"No. {id} - C"
+
+    power1 = ""
+    power2 = ""
+    power3 = ""
+    toughness1 = ""
+    toughness2 = ""
+    toughness3 = ""
+    if faceOne[8]:
+        power1 = faceOne[8]
+    if faceTwo[8]:
+        power2 = faceTwo[8]
+    if cardTwo['mainCard'][12]:
+        power3 = cardTwo['mainCard'][12]
+    if faceOne[9]:
+        toughness1 = faceOne[9]
+    if faceTwo[9]:
+        toughness2 = faceTwo[9]
+    if cardTwo['mainCard'][13]:
+        toughness3 = cardTwo['mainCard'][13]
+    return {
+        "oracle_id": id,
+        "name": f"No. {id}",
+        "mana_cost": "",
+        "cmc": "",
+        "type_line": f"{faceOne[10]} // {faceTwo[10]} // {cardTwo['mainCard'][14]}",
+        "colors": "",
+        "card_faces": [
+            {
+                "object": "card_face",
+                "name": newName,
+                "mana_cost": faceOne[6],
+                "type_line": faceOne[10],
+                "oracle_text": faceOne[11].replace(faceOne[7], newName),
+                "power": power1,
+                "toughness": toughness1,
+                "id": id
+            },
+            {
+                "object": "card_face",
+                "name": newNameTwo,
+                "mana_cost": faceTwo[6],
+                "type_line": faceTwo[10],
+                "oracle_text": faceTwo[11].replace(faceTwo[7], newNameTwo),
+                "power": power2,
+                "toughness": toughness2,
+                "id": id
+            },
+            {
+                "object": "card_face",
+                "name": newNameThree,
+                "mana_cost": cardTwo['mainCard'][9],
+                "type_line": cardTwo['mainCard'][14],
+                "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameThree),
+                "power": power3,
+                "toughness": toughness3,
+                "id": id
+            }
+        ]
+    }
+
+def createFourFaceCardObject(cardOne, cardTow, id):
+    print()
 
 def normalNormal(cardOne, cardTwo, id):
     typeLineOne = cardOne['mainCard'][14]
@@ -416,20 +493,33 @@ def normalNormal(cardOne, cardTwo, id):
         createCardImage(card["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
-        createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1])
-        createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][0])
+        createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
+        createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
     else:
         card = createSingleFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
 
 
 def normalSaga(cardOne, cardTwo, id):
-    print()
+    typeLineOne = cardOne['mainCard'][14]
+    card = createTwoFaceCardObject(cardTwo, cardOne, id)
+    sagaLines = cardTwo['mainCard'][11].split('\n')
+    if sagaLines[1].startswith("I, II —") and sagaLines[2].startswith("III —") and len(sagaLines) == 3:
+        if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne or 'Land' in typeLineOne):
+            createCardImage(card["card_faces"][0], "Frames/12-3SagaMDFCFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
+            createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+        else:
+            createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
+            createCardImage(card["card_faces"][1], "Frames/StandardTransformBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, card2=card["card_faces"][0])
 
 def normalAdventure(cardOne, cardTwo, id):
-    print()
+    card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
+    createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+    createCardImage(card["card_faces"][2], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
 
 def normalPlaneswalker(cardOne, cardTwo, id):
+    card = createTwoFaceCardObject(cardOne, cardTwo, id)
+
     print()
 
 def sagaSaga(cardOne, cardTwo, id):
