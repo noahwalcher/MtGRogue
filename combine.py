@@ -90,6 +90,8 @@ aftermathBodyCoord1 = (33, 218, 342, 275)
 aftermathBodyCoord2 = (303, 260, 473, 342)
 saga2ChapterBodyCoord = ((44, 158, 182, 293), (44, 299, 182, 435))
 planeswalker3BodyCoord = ((65, 330, 343, 375),(65, 386, 343, 423),(65, 432, 343, 467))
+planeswalker3AbilityModifierCoords = ((36, 358), (36, 403), (36, 448))
+planeswalkerStartingLoyaltyCoord = (333, 484)
 
 #3rd/4th number are the size of the mana symbols
 standardManaCoord = (346, 31, 17, 18)
@@ -209,7 +211,7 @@ def getMainType(typeLine):
     else:
         return ""
   
-
+#TODO center planeswalker abilities
 #Pass the face in if card is multifaced
 def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, backCard = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
     frame = Image.open(framePath)
@@ -231,7 +233,11 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         #We don't account for passives or more/less than 3 abilities at the moment
         abilities = card["oracle_text"].split("\n")
         for index, ability in enumerate(abilities):
+            loyaltyModifier = ability.split(":")[0]
             draw_text_within_bounding_box(frame, draw, ability, "Fonts/mplantin.ttf", 14, textCoord[index])
+            draw.text(planeswalker3AbilityModifierCoords[index], loyaltyModifier, font=typeFont, fill="white", anchor="mm", align="center")
+            print(f"Starting loyalty here ----:> {card["loyalty"]}")
+            draw.text(planeswalkerStartingLoyaltyCoord, card["loyalty"], font=typeFont, fill="white", anchor="mm", align="center")
     else:
         itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
     if flipsideTitleCoords and backCard:
@@ -268,9 +274,6 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
     elif ("Frames/Standard.png" == framePath) and not itFits:
         createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
-    elif ():#TODO handle all cases where card needs extended body room
-        #Might be able to combine a lot of these. Need to see once we get further
-        print()
     else:
         print("Saving")
         #TODO Add card object to database
@@ -373,6 +376,8 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
     power2 = ""
     toughness1 = ""
     toughness2 = ""
+    loyalty1 = ""
+    loyalty2 = ""
     if cardOne['mainCard'][12]:
         power1 = cardOne['mainCard'][12]
     if cardTwo['mainCard'][12]:
@@ -381,6 +386,10 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
         toughness1 = cardOne['mainCard'][13]
     if cardTwo['mainCard'][13]:
         toughness2 = cardTwo['mainCard'][13]
+    if cardOne['mainCard'][8]:
+        loyalty1 = cardOne['mainCard'][8]
+    if cardTwo['mainCard'][8]:
+        loyalty2 = cardTwo['mainCard'][8]
     return {
         "oracle_id": id,
         "name": f"No. {id}",
@@ -397,7 +406,8 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
                 "oracle_text": cardOne['mainCard'][11].replace(cardOne['mainCard'][10], newName),
                 "power": power1,
                 "toughness": toughness1,
-                "id": id
+                "id": id,
+                "loyalty": loyalty1
             },
             {
                 "object": "card_face",
@@ -407,7 +417,8 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
                 "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameTwo),
                 "power": power2,
                 "toughness": toughness2,
-                "id": id
+                "id": id,
+                "loyalty": loyalty2
             }
         ]
     }
@@ -423,6 +434,9 @@ def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
     toughness1 = ""
     toughness2 = ""
     toughness3 = ""
+    loyalty1 = ""
+    loyalty2 = ""
+    loyalty3 = ""
     if faceOne[8]:
         power1 = faceOne[8]
     if faceTwo[8]:
@@ -435,12 +449,108 @@ def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
         toughness2 = faceTwo[9]
     if cardTwo['mainCard'][13]:
         toughness3 = cardTwo['mainCard'][13]
+    if faceOne[5]:
+        loyalty1 = faceOne[5]
+    if faceTwo[5]:
+        loyalty2 = faceTwo[5]
+    if cardTwo['mainCard'][8]:
+        loyalty3 = cardTwo['mainCard'][8]
+
+    faceTwoText = faceTwo[11]
+    pattern = r'\(Then exile this card\. You may cast the (\w+) later from exile\.\)'
+    if re.search(pattern, faceTwo[11]):
+        faceTwoText = re.sub(pattern, r"(Then exile this card. You may play a non-adventure card exiled this way.)", faceTwo[11])
+
+
     return {
         "oracle_id": id,
         "name": f"No. {id}",
         "mana_cost": "",
         "cmc": "",
         "type_line": f"{faceOne[10]} // {faceTwo[10]} // {cardTwo['mainCard'][14]}",
+        "colors": "",
+        "card_faces": [
+            {
+                "object": "card_face",
+                "name": newName,
+                "mana_cost": faceOne[6],
+                "type_line": faceOne[10],
+                "oracle_text": faceOne[11].replace(faceOne[7], newName),
+                "power": power1,
+                "toughness": toughness1,
+                "id": id,
+                "loyalty": loyalty1
+            },
+            {
+                "object": "card_face",
+                "name": newNameTwo,
+                "mana_cost": faceTwo[6],
+                "type_line": faceTwo[10],
+                "oracle_text": faceTwoText.replace(faceTwo[7], newNameTwo),
+                "power": power2,
+                "toughness": toughness2,
+                "id": id,
+                "loyalty": loyalty2
+            },
+            {
+                "object": "card_face",
+                "name": newNameThree,
+                "mana_cost": cardTwo['mainCard'][9],
+                "type_line": cardTwo['mainCard'][14],
+                "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameThree),
+                "power": power3,
+                "toughness": toughness3,
+                "id": id,
+                "loyalty": loyalty3
+            }
+        ]
+    }
+
+def createFourFaceCardObject(faceOne, faceTwo, faceThree, faceFour, id):
+    newName = f"No. {id} - A"
+    newNameTwo = f"No. {id} - B"
+    newNameThree = f"No. {id} - C"
+    newNameFour = f"No. {id} - D"
+
+    power1 = ""
+    power2 = ""
+    power3 = ""
+    power4 = ""
+    toughness1 = ""
+    toughness2 = ""
+    toughness3 = ""
+    toughness4 = ""
+    if faceOne[8]:
+        power1 = faceOne[8]
+    if faceTwo[8]:
+        power2 = faceTwo[8]
+    if faceThree[8]:
+        power3 = faceThree[8]
+    if faceFour[8]:
+        power4 = faceFour[8]
+    if faceOne[9]:
+        toughness1 = faceOne[9]
+    if faceTwo[9]:
+        toughness2 = faceTwo[9]
+    if faceThree[9]:
+        toughness3 = faceThree[9]
+    if faceFour[9]:
+        toughness4 = faceFour[9]
+    faceTwoText = faceTwo[11]
+    faceFourText = faceFour[11]
+    pattern = r'\(Then exile this card\. You may cast the (\w+) later from exile\.\)'
+    if re.search(pattern, faceTwo[11]):
+        faceTwoText = re.sub(pattern, r"(Then exile this card. You may play a non-adventure card exiled this way.)", faceTwo[11])
+    if re.search(pattern, faceFour[11]):
+        faceFourText = re.sub(pattern, r"(Then exile this card. You may play a non-adventure card exiled this way.)", faceFour[11])
+
+
+    return {
+        "oracle_id": id,
+        "name": f"No. {id}",
+        "mana_cost": "",
+        "cmc": "",
+        "type_line": f"{faceOne[10]} // {faceTwo[10]} // {faceThree[10]} // {faceFour[10]}",
         "colors": "",
         "card_faces": [
             {
@@ -458,7 +568,7 @@ def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
                 "name": newNameTwo,
                 "mana_cost": faceTwo[6],
                 "type_line": faceTwo[10],
-                "oracle_text": faceTwo[11].replace(faceTwo[7], newNameTwo),
+                "oracle_text": faceTwoText.replace(faceTwo[7], newNameTwo),
                 "power": power2,
                 "toughness": toughness2,
                 "id": id
@@ -466,18 +576,25 @@ def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
             {
                 "object": "card_face",
                 "name": newNameThree,
-                "mana_cost": cardTwo['mainCard'][9],
-                "type_line": cardTwo['mainCard'][14],
-                "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameThree),
+                "mana_cost": faceThree[6],
+                "type_line": faceThree[10],
+                "oracle_text": faceThree[11].replace(faceThree[7], newNameThree),
                 "power": power3,
                 "toughness": toughness3,
                 "id": id
-            }
+            },
+            {
+                "object": "card_face",
+                "name": newNameFour,
+                "mana_cost": faceFour[6],
+                "type_line": faceFour[10],
+                "oracle_text": faceFourText.replace(faceFour[7], newNameFour),
+                "power": power4,
+                "toughness": toughness4,
+                "id": id
+            },
         ]
     }
-
-def createFourFaceCardObject(cardOne, cardTow, id):
-    print()
 
 def normalNormal(cardOne, cardTwo, id):
     typeLineOne = cardOne['mainCard'][14]
@@ -540,20 +657,27 @@ def normalPlaneswalker(cardOne, cardTwo, id):
 def sagaSaga(cardOne, cardTwo, id):
     print()
 
-#TODO change adventure reminder text based on permanent type or make it catch-all
 def sagaAdventure(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
     createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     createCardImage(card["card_faces"][2], "Frames/12-3SagaMDFCBack.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
 
+#Only works for specifically formatted planeswalkers/sagas. Needs more logic to handle other cases
 def sagaPlaneswalker(cardOne, cardTwo, id):
-    print()
+    card = createTwoFaceCardObject(cardOne, cardTwo, id)
+    createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
+    createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerTransformBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, backCard=card["card_faces"][0])
 
 def adventureAdventure(cardOne, cardTwo, id):
-    print()
+    card = createFourFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo['faces'][0], cardTwo['faces'][1], id)
+    createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+    createCardImage(card["card_faces"][2], "Frames/AdventureMDFCBack.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][0] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][3], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
 
 def adventurePlaneswalker(cardOne, cardTwo, id):
-    print()
+    card = createThreeFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo, id)
+    createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+    createCardImage(card["card_faces"][2], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
 
+#Don't currently have 2 planeswalkers in the list
 def planeswalkerPlaneswalker(cardOne, cardTwo, id):
     print()
