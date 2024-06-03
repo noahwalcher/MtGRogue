@@ -68,7 +68,7 @@ offsetTitleCoord = (59, 28)
 fuseTitleCoord1 = (49, 23)
 fuseTitleCoord2 = (290, 23)
 adventureTitleCoord = (32, 331)
-planeswalkerTitleCoord = ()
+offsetPlaneswalkerTitleCoord = (63, 19)
 aftermathTitleCoord = (295, 30)
 
 standardTypeCoord = (33, 298)
@@ -86,10 +86,10 @@ fuseBodyCoord1 = (48, 237, 251, 330)
 fuseBodyCoord2 = (289, 237, 492, 330)
 adventureBodyCoord1 = (194, 332, 347, 479)
 adventureBodyCoord2 = (33, 379, 183, 479)
-planeswalkerBodyCoord = ()
 aftermathBodyCoord1 = (33, 218, 342, 275)
 aftermathBodyCoord2 = (303, 260, 473, 342)
 saga2ChapterBodyCoord = ((44, 158, 182, 293), (44, 299, 182, 435))
+planeswalker3BodyCoord = ((65, 330, 343, 375),(65, 386, 343, 423),(65, 432, 343, 467))
 
 #3rd/4th number are the size of the mana symbols
 standardManaCoord = (346, 31, 17, 18)
@@ -98,6 +98,7 @@ fuseManaCoord2 = (498, 28, 15, 16)
 MDFCManaCoord = (160, 472, 11, 11)
 adventureManaCoord = (180, 333, 14, 15)
 aftermathManaCoord = (476, 34, 17, 18)
+planeswalkerManaCoord = (347, 23, 17, 17)
 
 flipsideTitleCoord = (27, 473)
 
@@ -214,7 +215,8 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
-    drawManaCost(frame, card["mana_cost"], manaCoord)
+    if ("TransformBack" not in framePath):
+        drawManaCost(frame, card["mana_cost"], manaCoord)
     draw.text(typeCoord, card["type_line"], font=typeFont, fill="black")
     if (card["power"] and card["toughness"]):
         box = Image.open("ManaSymbols/clpt.png").resize((81, 42))
@@ -225,6 +227,11 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         for index, chapter in enumerate(chapters):
             chapter = chapter.split(" — ")[1]
             draw_text_within_bounding_box(frame, draw, chapter, "Fonts/mplantin.ttf", 14, textCoord[index])
+    elif ("Planeswalker" in framePath):
+        #We don't account for passives or more/less than 3 abilities at the moment
+        abilities = card["oracle_text"].split("\n")
+        for index, ability in enumerate(abilities):
+            draw_text_within_bounding_box(frame, draw, ability, "Fonts/mplantin.ttf", 14, textCoord[index])
     else:
         itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
     if flipsideTitleCoords and backCard:
@@ -519,14 +526,25 @@ def normalAdventure(cardOne, cardTwo, id):
 
 def normalPlaneswalker(cardOne, cardTwo, id):
     card = createTwoFaceCardObject(cardOne, cardTwo, id)
+    planeswalkerAbilities = cardTwo['mainCard'][11].split('\n')
+    hasPassive = False
+    if ":" not in planeswalkerAbilities[0]:
+        hasPassive = True
+        planeswalkerAbilities = planeswalkerAbilities[1:]
+    #Currently only handle planeswalkers with 3 abilities and no passives
+    if not hasPassive and len(planeswalkerAbilities) == 3:
+        createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
+        createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
 
-    print()
-
+#Don't currently support saga/saga
 def sagaSaga(cardOne, cardTwo, id):
     print()
 
+#TODO change adventure reminder text based on permanent type or make it catch-all
 def sagaAdventure(cardOne, cardTwo, id):
-    print()
+    card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
+    createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+    createCardImage(card["card_faces"][2], "Frames/12-3SagaMDFCBack.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
 
 def sagaPlaneswalker(cardOne, cardTwo, id):
     print()
