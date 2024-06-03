@@ -4,8 +4,6 @@ import re
 from PIL import Image, ImageDraw, ImageFont
 
 def combine(cardOne, cardTwo):
-    print("In combine method")
-
     if os.path.exists('id_counter.txt'):
         with open('id_counter.txt', 'r') as file:
             id = int(file.read().strip())
@@ -96,16 +94,18 @@ standardManaCoord = (346, 31, 17, 18)
 fuseManaCoord1 = (256, 28, 15, 16)
 fuseManaCoord2 = (498, 28, 15, 16)
 MDFCManaCoord = (160, 472, 11, 11)
-adventureManaCoord = (179, 333, 15, 16)
+adventureManaCoord = (180, 333, 14, 15)
 aftermathManaCoord = (476, 34, 17, 18)
 
 flipsideTitleCoord = (27, 473)
 
 
-def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
+def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, bounding_box):
     font = ImageFont.truetype(fontPath, fontSize)
     x, y, x2, y2 = bounding_box
     lines = text.split('\n')
+    space_width = draw.textbbox((0, 0), ' ', font)[2] - draw.textbbox((0, 0), ' ', font)[0]
+    pattern = r'(\{.*?\}|[^{}]+)'
     for index, line in enumerate(lines):
         words = line.split()
         wrappedLine = []
@@ -125,12 +125,35 @@ def draw_text_within_bounding_box(draw, text, fontPath, fontSize, bounding_box):
     textHeight = text_bbox[3] - text_bbox[1]
     if textHeight <= (y2 - y):
         print(f"Printed at {fontSize}")
-        draw.text((x, y), "\n".join(lines), font=font, fill="black")
+        current_y = y
+        for line in lines:
+            getLineHeight = draw.textbbox((0, 0), line, font)
+            words = line.split()
+            for index, word in enumerate(words):
+                if re.search(pattern, word):
+                    parsedWord = [match for match in re.findall(pattern, word)]
+                    words[index:index+1] = parsedWord                
+            current_x = x
+            for word in words:
+                text_bbox = draw.textbbox((current_x, current_y), word, font)
+                textWidth = text_bbox[2] - text_bbox[0]
+                if word.startswith("{") and word.endswith("}"):
+                    innerSymbol = word[1:-1].lower().replace("/", "")
+                    symbol = Image.open(f"ManaSymbols/{innerSymbol}.png").resize((fontSize, fontSize))
+                    frame.paste(symbol, (current_x, current_y), symbol)
+                    textWidth = fontSize
+                    print(f"THIS IS OUR WORD ---> {word}")
+                else:        
+                    draw.text((current_x, current_y), word, font=font, fill="black")
+                current_x += textWidth + space_width
+            current_y += getLineHeight[3] -  getLineHeight[1]
+
+        #draw.text((x, y), "\n".join(lines), font=font, fill="black")
         return True
     else:
         if fontSize > 10: #This is the minimum font size that can be adjusted
             print(f"Couldn't fit at {fontSize}. Reducing")
-            return draw_text_within_bounding_box(draw, text, fontPath, fontSize - 1, bounding_box)
+            return draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize - 1, bounding_box)
         else:
             print("Couldn't fit within the bounding box")
             return False
@@ -165,9 +188,6 @@ def drawManaCost(frame, mana_cost, position):
         # Move to the next position
         x += mana_symbol_size[0] + spacing
 
-    # Save or show the modified card image
-    frame.save("modified_card.png")
-
 def getMainType(typeLine):
     if "Planeswalker" in typeLine:
         return "Planeswalker"
@@ -185,16 +205,20 @@ def getMainType(typeLine):
         return "Sorcery"
     else:
         return ""
+  
 
 #Pass the face in if card is multifaced
-#TODO draw mana symbols in text of card
 def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
     drawManaCost(frame, card["mana_cost"], manaCoord)
     draw.text(typeCoord, card["type_line"], font=typeFont, fill="black")
-    itFits = draw_text_within_bounding_box(draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
+    if (card["power"] and card["toughness"]):
+        box = Image.open("ManaSymbols/clpt.png").resize((81, 42))
+        frame.paste(box, (274, 466), box)
+        draw.text((316, 483), f"{card['power']}/{card['toughness']}", font=titleFont, fill="black", align="center", anchor="mm")
+    itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
     if flipsideTitleCoords and card2:
         if "Back" in framePath:
             draw.text(flipsideTitleCoords, getMainType(card2["type_line"]), font=flipsideTitleFont, fill="black")
@@ -203,28 +227,27 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
             draw.text(flipsideTitleCoords, getMainType(card2["type_line"]), font=flipsideTitleFont, fill="white")
             drawManaCost(frame, card2["mana_cost"], MDFCManaCoord)
     if card2 and title2Coord and type2Coord and text2Coord and manaCoord2:
-        print("This card has 2 faces!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if "Aftermath" in framePath:
             rotatedFrame = frame.rotate(90, expand=True)
             draw = ImageDraw.Draw(rotatedFrame)
             draw.text(title2Coord, card2["name"], font=titleFont, fill="black")
             draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
-            drawManaCost(frame, card2["mana_cost"], manaCoord2)
-            itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
+            drawManaCost(rotatedFrame, card2["mana_cost"], manaCoord2)
+            itFits2 = draw_text_within_bounding_box(frame, draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
             frame = rotatedFrame.rotate(-90, expand=True)
         else:
             if ("Adventure" in framePath):
-                draw.text(title2Coord, card2["name"], font=typeFont, fill="black")
-                draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
+                draw.text(title2Coord, card2["name"], font=typeFont, fill="white")
+                draw.text(type2Coord, card2["type_line"], font=typeFont, fill="white")
                 drawManaCost(frame, card2["mana_cost"], manaCoord2)
-                itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
+                itFits2 = draw_text_within_bounding_box(frame, draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
             else:
                 draw.text(title2Coord, card2["name"], font=titleFont, fill="black")
                 draw.text(type2Coord, card2["type_line"], font=typeFont, fill="black")
                 drawManaCost(frame, card2["mana_cost"], manaCoord2)
-                itFits2 = draw_text_within_bounding_box(draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
+                itFits2 = draw_text_within_bounding_box(frame, draw, card2["oracle_text"], "Fonts/mplantin.ttf", 14, text2Coord)
     #extend frame based on prior frame
-    if ("Fuse" in framePath or "Aftermath" in framePath) and (not itFits or not itFits2):
+    if ("Fuse" in framePath or "Aftermath" in framePath or "Adventure" in framePath) and (not itFits or not itFits2):
         print("Didn't fit. Making mdfc")
         createCardImage(card, "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card2)
         createCardImage(card2, "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card)
@@ -239,6 +262,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         frame.save(f"test/{card["name"]}.png")
 
 def createSingleFaceCardObject(cardOne, cardTwo, id):
+    newName = f"No. {id}"
     newSuperType = ""
     if "Legendary" in cardOne['mainCard'][14] or "Legendary" in cardTwo['mainCard'][14]:
         newSuperType += " Legendary"
@@ -274,16 +298,15 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
         oracle += reconfigureText
         return {
             "oracle_id": id,
-            "name": f"No. {id}",
+            "name": newName,
             "mana_cost": cardOne['mainCard'][9],
             "cmc": cardOne['mainCard'][4],
             "type_line": f"{newFullTypeLine}",
-            "oracle_text": oracle,
+            "oracle_text": oracle.replace(cardOne['mainCard'][10], newName),
             "power": cardOne['mainCard'][12],
             "toughness": cardOne['mainCard'][13]
         }
     else:
-        print("Not reconfigure")
         cmc = cardOne['mainCard'][4] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][4]
         manaCost = cardOne['mainCard'][9] if cardOne['mainCard'][4] > cardTwo['mainCard'][4] else cardTwo['mainCard'][9]
         oracle = f"{cardOne['mainCard'][11]}\n{cardTwo['mainCard'][11]}"
@@ -318,17 +341,31 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
                 
         return {
             "oracle_id": id,
-            "name": f"No. {id}",
+            "name": newName,
             "mana_cost": manaCost,
             "cmc": cmc,
             "type_line": f"{newFullTypeLine}",
-            "oracle_text": oracle,
+            "oracle_text": oracle.replace(cardOne['mainCard'][10], newName),
             "power": power,
             "toughness": toughness
         }
     
-
 def createTwoFaceCardObject(cardOne, cardTwo, id):
+    newName = f"No. {id} - A"
+    newNameTwo = f"No. {id} - B"
+
+    power1 = ""
+    power2 = ""
+    toughness1 = ""
+    toughness2 = ""
+    if cardOne['mainCard'][12]:
+        power1 = cardOne['mainCard'][12]
+    if cardTwo['mainCard'][12]:
+        power2 = cardTwo['mainCard'][12]
+    if cardOne['mainCard'][13]:
+        toughness1 = cardOne['mainCard'][13]
+    if cardTwo['mainCard'][13]:
+        toughness2 = cardTwo['mainCard'][13]
     return {
         "oracle_id": id,
         "name": f"No. {id}",
@@ -339,17 +376,21 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
         "card_faces": [
             {
                 "object": "card_face",
-                "name": f"No. {id} - A",
+                "name": newName,
                 "mana_cost": cardOne['mainCard'][9],
                 "type_line": cardOne['mainCard'][14],
-                "oracle_text": cardOne['mainCard'][11]
+                "oracle_text": cardOne['mainCard'][11].replace(cardOne['mainCard'][10], newName),
+                "power": power1,
+                "toughness": toughness1
             },
             {
                 "object": "card_face",
-                "name": f"No. {id} - B",
+                "name": newNameTwo,
                 "mana_cost": cardTwo['mainCard'][9],
                 "type_line": cardTwo['mainCard'][14],
-                "oracle_text": cardTwo['mainCard'][11]
+                "oracle_text": cardTwo['mainCard'][11].replace(cardTwo['mainCard'][10], newNameTwo),
+                "power": power2,
+                "toughness": toughness2
             }
         ]
     }
@@ -359,7 +400,6 @@ def normalNormal(cardOne, cardTwo, id):
     typeLineTwo = cardTwo['mainCard'][14]
     if ('Instant' in typeLineOne and 'Instant' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Sorcery' in typeLineTwo):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
-        #def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
         createCardImage(card["card_faces"][0], "Frames/Fuse.png", fuseTitleCoord1, fuseTypeCoord1, fuseBodyCoord1, fuseManaCoord1, card2 = card["card_faces"][1], title2Coord=fuseTitleCoord2, type2Coord=fuseTypeCoord2, text2Coord=fuseBodyCoord2, manaCoord2=fuseManaCoord2 )
     elif ('Instant' in typeLineOne and 'Sorcery' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Instant' in typeLineTwo):
         oracle_text_1 = cardOne['mainCard'][11]
@@ -372,11 +412,12 @@ def normalNormal(cardOne, cardTwo, id):
     elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
         if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne):
             cardOne, cardTwo = cardTwo, cardOne
-        print(f"card one -> {cardOne}")
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
-        print()#TODO MDFC
+        card = createTwoFaceCardObject(cardOne, cardTwo, id)
+        createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1])
+        createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][0])
     else:
         card = createSingleFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
