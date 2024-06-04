@@ -1,7 +1,9 @@
 import json
 import os
 import re
+import sqlite3
 from PIL import Image, ImageDraw, ImageFont
+import fetchAndPopulateDB
 
 def combine(cardOne, cardTwo):
     if os.path.exists('id_counter.txt'):
@@ -57,6 +59,9 @@ def combine(cardOne, cardTwo):
     id += 1
     with open('id_counter.txt', 'w') as file:
             file.write(str(id))
+
+conn = sqlite3.connect('mtg_cards.db')
+cursor = conn.cursor()
 
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
 typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
@@ -152,8 +157,6 @@ def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, boundin
                     draw.text((current_x, current_y), word, font=font, fill="black")
                 current_x += textWidth + space_width
             current_y += getLineHeight[3] -  getLineHeight[1]
-
-        #draw.text((x, y), "\n".join(lines), font=font, fill="black")
         return True
     else:
         if fontSize > 10: #This is the minimum font size that can be adjusted
@@ -211,9 +214,8 @@ def getMainType(typeLine):
     else:
         return ""
   
-#TODO center planeswalker abilities
 #Pass the face in if card is multifaced
-def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, backCard = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None):
+def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, backCard = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None, databaseCard = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)
     draw.text(titleCoord, card["name"], font=titleFont, fill="black")
@@ -276,8 +278,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
     else:
         print("Saving")
-        #TODO Add card object to database
-        frame.save(f"test/{card["name"]}.png")
+        frame.save(f"images/{card["name"]}.png")
 
 def createSingleFaceCardObject(cardOne, cardTwo, id):
     newName = f"No. {id}"
@@ -316,6 +317,9 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
         oracle += reconfigureText
         return {
             "oracle_id": id,
+            "set_type": "Rogue",
+            "layout": "Rogue",
+            "set_name": "Rogue",
             "name": newName,
             "mana_cost": cardOne['mainCard'][9],
             "cmc": cardOne['mainCard'][4],
@@ -359,6 +363,9 @@ def createSingleFaceCardObject(cardOne, cardTwo, id):
                 
         return {
             "oracle_id": id,
+            "set_type": "Rogue",
+            "layout": "Rogue",
+            "set_name": "Rogue",
             "name": newName,
             "mana_cost": manaCost,
             "cmc": cmc,
@@ -392,6 +399,9 @@ def createTwoFaceCardObject(cardOne, cardTwo, id):
         loyalty2 = cardTwo['mainCard'][8]
     return {
         "oracle_id": id,
+        "set_type": "Rogue",
+        "layout": "Rogue",
+        "set_name": "Rogue",
         "name": f"No. {id}",
         "mana_cost": "",
         "cmc": "",
@@ -464,6 +474,9 @@ def createThreeFaceCardObject(faceOne, faceTwo, cardTwo, id):
 
     return {
         "oracle_id": id,
+        "set_type": "Rogue",
+        "layout": "Rogue",
+        "set_name": "Rogue",
         "name": f"No. {id}",
         "mana_cost": "",
         "cmc": "",
@@ -547,6 +560,9 @@ def createFourFaceCardObject(faceOne, faceTwo, faceThree, faceFour, id):
 
     return {
         "oracle_id": id,
+        "set_type": "Rogue",
+        "layout": "Rogue",
+        "set_name": "Rogue",
         "name": f"No. {id}",
         "mana_cost": "",
         "cmc": "",
@@ -602,6 +618,9 @@ def normalNormal(cardOne, cardTwo, id):
     if ('Instant' in typeLineOne and 'Instant' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Sorcery' in typeLineTwo):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card["card_faces"][0], "Frames/Fuse.png", fuseTitleCoord1, fuseTypeCoord1, fuseBodyCoord1, fuseManaCoord1, card2 = card["card_faces"][1], title2Coord=fuseTitleCoord2, type2Coord=fuseTypeCoord2, text2Coord=fuseBodyCoord2, manaCoord2=fuseManaCoord2 )
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
     elif ('Instant' in typeLineOne and 'Sorcery' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Instant' in typeLineTwo):
         oracle_text_1 = cardOne['mainCard'][11]
         oracle_text_2 = cardTwo['mainCard'][11]
@@ -610,19 +629,31 @@ def normalNormal(cardOne, cardTwo, id):
         else:
             card = createTwoFaceCardObject(cardTwo, cardOne, id)
         createCardImage(card["card_faces"][0], "Frames/Aftermath.png", standardTitleCoord, aftermathTypeCoord1, aftermathBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=aftermathTitleCoord, type2Coord=aftermathTypeCoord2, text2Coord=aftermathBodyCoord2, manaCoord2=aftermathManaCoord)
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
+
     elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
         if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne):
             cardOne, cardTwo = cardTwo, cardOne
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
     elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
         createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
     else:
         card = createSingleFaceCardObject(cardOne, cardTwo, id)
         createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
-
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
 
 def normalSaga(cardOne, cardTwo, id):
     typeLineOne = cardOne['mainCard'][14]
@@ -632,14 +663,23 @@ def normalSaga(cardOne, cardTwo, id):
         if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne or 'Land' in typeLineOne):
             createCardImage(card["card_faces"][0], "Frames/12-3SagaMDFCFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
             createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+            fetchAndPopulateDB.insert_card_data(cursor, card)
+            conn.commit()
+            conn.close()
         else:
             createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
             createCardImage(card["card_faces"][1], "Frames/StandardTransformBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, card2=card["card_faces"][0])
+            fetchAndPopulateDB.insert_card_data(cursor, card)
+            conn.commit()
+            conn.close()
 
 def normalAdventure(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
     createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     createCardImage(card["card_faces"][2], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
 
 def normalPlaneswalker(cardOne, cardTwo, id):
     card = createTwoFaceCardObject(cardOne, cardTwo, id)
@@ -652,6 +692,9 @@ def normalPlaneswalker(cardOne, cardTwo, id):
     if not hasPassive and len(planeswalkerAbilities) == 3:
         createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
         createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+        fetchAndPopulateDB.insert_card_data(cursor, card)
+        conn.commit()
+        conn.close()
 
 #Don't currently support saga/saga
 def sagaSaga(cardOne, cardTwo, id):
@@ -661,22 +704,34 @@ def sagaAdventure(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
     createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     createCardImage(card["card_faces"][2], "Frames/12-3SagaMDFCBack.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
 
 #Only works for specifically formatted planeswalkers/sagas. Needs more logic to handle other cases
 def sagaPlaneswalker(cardOne, cardTwo, id):
     card = createTwoFaceCardObject(cardOne, cardTwo, id)
     createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
     createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerTransformBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, backCard=card["card_faces"][0])
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
 
 def adventureAdventure(cardOne, cardTwo, id):
     card = createFourFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo['faces'][0], cardTwo['faces'][1], id)
     createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     createCardImage(card["card_faces"][2], "Frames/AdventureMDFCBack.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][0] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][3], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
 
 def adventurePlaneswalker(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo, id)
     createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     createCardImage(card["card_faces"][2], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
 
 #Don't currently have 2 planeswalkers in the list
 def planeswalkerPlaneswalker(cardOne, cardTwo, id):

@@ -26,7 +26,7 @@ def fetch_card_by_id(id):
         card_faces = fetch_card_faces(card_id)
         return {'mainCard': card, 'faces': card_faces}
     else:
-        print(f"No card found with the id '{id}")
+        print(f"No card found with the id '{id}'")
 
 def fetch_card_by_name(name):
     conn = connect_db()
@@ -147,14 +147,18 @@ def main():
         card_names = [line.strip() for line in file.readlines()]
 
     # download_card_images(card_names)
+    choice = input("fetch or combine")
+    if "fetch" in choice:
+        card = input("Card Name")
+        print(f"card name here -> {card}")
+        print(fetch_card_by_id(card))
+    elif "combine" in choice:
+        card_name = input("Enter the name of the card: ")
+        cardOne = fetch_card_by_name(card_name)
+        card_name = input("Enter the name of the 2nd card: ")
+        cardTwo = fetch_card_by_name(card_name)
 
-    card_name = input("Enter the name of the card: ")
-    cardOne = fetch_card_by_name(card_name)
-    card_name = input("Enter the name of the 2nd card: ")
-    cardTwo = fetch_card_by_name(card_name)
-    print(f"INITIAL CARD ONE HERE --------------> {cardOne}")
-
-    combine.combine(cardOne, cardTwo)
+        combine.combine(cardOne, cardTwo)
 
 if __name__ == '__main__':
     main()
