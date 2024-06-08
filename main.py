@@ -1,5 +1,6 @@
 import tkinter as tk
 import databaseAccessor
+import combine  # Ensure you have combine.py in your project
 
 class App(tk.Tk):
     def __init__(self):
@@ -16,7 +17,7 @@ class App(tk.Tk):
 
         # Initialize frames
         self.frames = {}
-        for F in (StartPage, Combine):
+        for F in (StartPage, CombinePage, ClonePage):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
@@ -33,7 +34,6 @@ class App(tk.Tk):
         frame.tkraise()
 
 
-
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -41,60 +41,127 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="This is the start page")
         label.pack(pady=10, padx=10)
         
-
-        
-        # Create a button to go to Page One
+        # Create a button to go to Combine Page
         button = tk.Button(self, text="Combine",
-                           command=lambda: controller.show_frame("Combine"))
+                           command=lambda: controller.show_frame("CombinePage"))
         button.pack()
+        cloneButton = tk.Button(self, text="Clone",
+                           command=lambda: controller.show_frame("ClonePage"))
+        cloneButton.pack()
 
-class Combine(tk.Frame):
+class ClonePage(tk.Frame):
     def __init__(self, parent, controller):
-        card1 = None
-        card2 = None
         super().__init__(parent)
         self.controller = controller
-        label = tk.Label(self, text="This is page one")
+        label = tk.Label(self, text="This is the clone page")
+        label.pack(pady=10, padx=10)
+        
+        # Create a button to go to Combine Page
+        button = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack()
+
+        self.entry1 = tk.Entry(self, textvariable=controller.input_text)
+        self.entry1.pack(pady=10, padx=10)
+
+        button1 = tk.Button(self, text="Find Card",
+                            command=lambda: self.getCard(controller.input_text.get()))
+        button1.pack()
+
+        def getCard(self, cardName):
+            card = databaseAccessor.fetch_card_by_name(cardName)
+            if card:
+                # Display a green checkmark if card is found
+                self.display_label1.config(text="✓", fg="green")
+                self.controller.card1 = card
+            else:
+                # Display a red cross if card is not found
+                self.display_label1.config(text="✗", fg="red")
+                self.controller.card1 = None
+            print(card)
+
+
+class CombinePage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        # Create a button to go back to Start Page
+        button = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack()
+
+        label = tk.Label(self, text="This is the combine page")
         label.pack(pady=10, padx=10)
 
         # Create an Entry widget for text input
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
         self.entry1.pack(pady=10, padx=10)
 
-        if card1:
-            self.display_label = tk.Label(self, textvariable=card1['mainCard'][10])
-            self.display_label.pack(pady=10, padx=10)
+        # Placeholder for display label
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.pack(pady=10, padx=10)
 
         button1 = tk.Button(self, text="Find Card",
-                           command=lambda: Combine.getCard(self, controller.input_text.get()))
+                            command=lambda: self.getCard(controller.input_text.get()))
         button1.pack()
 
         self.entry2 = tk.Entry(self, textvariable=controller.input_text2)
         self.entry2.pack(pady=10, padx=10)
 
-        button2 = tk.Button(self, text="Find Card",
-                           command=lambda: Combine.getCard2(self, controller.input_text2.get()))
-        button2.pack()
-        
-        
-        self.display_label2 = tk.Label(self, textvariable=controller.input_text2)
+        # Placeholder for display label
+        self.display_label2 = tk.Label(self, text="")
         self.display_label2.pack(pady=10, padx=10)
-        
-        # Create a button to go back to Start Page
-        button = tk.Button(self, text="Go to Start Page",
-                           command=lambda: controller.show_frame("StartPage"))
-        button.pack()
 
+        button2 = tk.Button(self, text="Find Card",
+                            command=lambda: self.getCard2(controller.input_text2.get()))
+        button2.pack()
+
+        # Combine button (initially disabled)
+        self.combine_button = tk.Button(self, text="Combine", state=tk.DISABLED,
+                                        command=self.combine_cards)
+        self.combine_button.pack(pady=10, padx=10)
+
+        
 
     def getCard(self, cardName):
-        card1 = databaseAccessor.fetch_card_by_name(cardName)
-        self.display_label = tk.Label(self, textvariable=card1['mainCard'][10])
-        self.display_label.pack(pady=10, padx=10)
-        print(card1)
+        card = databaseAccessor.fetch_card_by_name(cardName)
+        if card:
+            # Display a green checkmark if card is found
+            self.display_label1.config(text="✓", fg="green")
+            self.controller.card1 = card
+        else:
+            # Display a red cross if card is not found
+            self.display_label1.config(text="✗", fg="red")
+            self.controller.card1 = None
+        self.update_combine_button_state()
+        print(card)
 
-    def getCard2(cardName):
-        card2 = databaseAccessor.fetch_card_by_name(cardName)
-        print(card2)
+    def getCard2(self, cardName):
+        card = databaseAccessor.fetch_card_by_name(cardName)
+        if card:
+            # Display a green checkmark if card is found
+            self.display_label2.config(text="✓", fg="green")
+            self.controller.card2 = card
+        else:
+            # Display a red cross if card is not found
+            self.display_label2.config(text="✗", fg="red")
+            self.controller.card2 = None
+        self.update_combine_button_state()
+        print(card)
+
+    def update_combine_button_state(self):
+        # Enable the combine button only if both cards are found
+        if self.controller.card1 and self.controller.card2:
+            self.combine_button.config(state=tk.NORMAL)
+        else:
+            self.combine_button.config(state=tk.DISABLED)
+
+    def combine_cards(self):
+        card1 = self.controller.card1
+        card2 = self.controller.card2
+        combine.combine(card1, card2)  # Call the combine method from combine.py
+        print("Cards combined")
 
 if __name__ == "__main__":
     app = App()
