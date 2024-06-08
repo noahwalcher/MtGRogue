@@ -12,7 +12,8 @@ class App(tk.Tk):
         
         # Create a StringVar to hold the input text
         self.input_text = tk.StringVar()
-        
+        self.input_text2 = tk.StringVar()
+
         # Initialize frames
         self.frames = {}
         for F in (StartPage, Combine):
@@ -31,9 +32,6 @@ class App(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
-    def getCard(self, cardName):
-        self.card1 = databaseAccessor.fetch_card_by_name(cardName)
-        print(self.card1)
 
 
 class StartPage(tk.Frame):
@@ -46,33 +44,57 @@ class StartPage(tk.Frame):
 
         
         # Create a button to go to Page One
-        button = tk.Button(self, text="Go to Page One",
+        button = tk.Button(self, text="Combine",
                            command=lambda: controller.show_frame("Combine"))
         button.pack()
 
 class Combine(tk.Frame):
     def __init__(self, parent, controller):
+        card1 = None
+        card2 = None
         super().__init__(parent)
         self.controller = controller
         label = tk.Label(self, text="This is page one")
         label.pack(pady=10, padx=10)
 
         # Create an Entry widget for text input
-        self.entry = tk.Entry(self, textvariable=controller.input_text)
-        self.entry.pack(pady=10, padx=10)
+        self.entry1 = tk.Entry(self, textvariable=controller.input_text)
+        self.entry1.pack(pady=10, padx=10)
+
+        if card1:
+            self.display_label = tk.Label(self, textvariable=card1['mainCard'][10])
+            self.display_label.pack(pady=10, padx=10)
 
         button1 = tk.Button(self, text="Find Card",
-                           command=lambda: controller.getCard(controller.input_text.get()))
+                           command=lambda: Combine.getCard(self, controller.input_text.get()))
         button1.pack()
+
+        self.entry2 = tk.Entry(self, textvariable=controller.input_text2)
+        self.entry2.pack(pady=10, padx=10)
+
+        button2 = tk.Button(self, text="Find Card",
+                           command=lambda: Combine.getCard2(self, controller.input_text2.get()))
+        button2.pack()
         
-        # Create a label to display the input text
-        self.display_label = tk.Label(self, textvariable=controller.input_text)
-        self.display_label.pack(pady=10, padx=10)
+        
+        self.display_label2 = tk.Label(self, textvariable=controller.input_text2)
+        self.display_label2.pack(pady=10, padx=10)
         
         # Create a button to go back to Start Page
         button = tk.Button(self, text="Go to Start Page",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
+
+
+    def getCard(self, cardName):
+        card1 = databaseAccessor.fetch_card_by_name(cardName)
+        self.display_label = tk.Label(self, textvariable=card1['mainCard'][10])
+        self.display_label.pack(pady=10, padx=10)
+        print(card1)
+
+    def getCard2(cardName):
+        card2 = databaseAccessor.fetch_card_by_name(cardName)
+        print(card2)
 
 if __name__ == "__main__":
     app = App()
