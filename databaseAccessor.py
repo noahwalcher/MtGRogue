@@ -4,6 +4,10 @@ from pathlib import Path
 import requests
 import shutil
 import combine
+from PIL import Image, ImageOps, ImageEnhance
+import pytesseract
+from fuzzywuzzy import process
+
 
 def connect_db(db_name='mtg_cards.db'):
     return sqlite3.connect(db_name)
@@ -34,7 +38,7 @@ def fetch_card_by_name(name):
 
     cursor.execute('''
         SELECT * FROM cards
-        WHERE name = ?
+        WHERE LOWER(name) = LOWER(?)
     ''', (name,))
     
     card = cursor.fetchone()
@@ -48,7 +52,7 @@ def fetch_card_by_name(name):
     else:
         cursor.execute('''
             SELECT * FROM card_faces
-            WHERE name = ?
+            WHERE LOWER(name) = LOWER(?)
         ''', (name,))
         
         card_face = cursor.fetchone()
@@ -140,8 +144,28 @@ def download_card_images(card_names):
 
     conn.close()
 
+with open(r'C:\Users\noahw\devl\MtGRogueMachine\mtg_rogue.txt', 'r') as file:
+    custom_words = [line.strip().lower() for line in file]
 
 def main():
+    image = Image.open("testOCR.jpg")
+    gray_image = ImageOps.grayscale(image)
+
+    # Enhance contrast
+    enhancer = ImageEnhance.Contrast(gray_image)
+    enhanced_image = enhancer.enhance(2)
+    custom_config = r'--psm 6 --oem 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-û " --user-words C:\\Users\\noahw\\devl\\MtGRogueMachine\\mtg_rogue.txt'
+
+    # Apply thresholding
+    binary_image = enhanced_image.point(lambda x: 0 if x < 140 else 255, '1')
+    text = pytesseract.image_to_string(binary_image, config=custom_config).strip().lower()
+
+    best_match, score = process.extractOne(text, custom_words)
+    print(f"best match -> {best_match.replace('ã»', 'û')}")
+
+     
+    print(f"Our text here!!!!!!!!!!!!!!!!!!!!! --> {best_match if score > 80 else text}")
+    return
     file_path = 'mtg_rogue.txt'
     with open(file_path, 'r', encoding='utf-8') as file:
         card_names = [line.strip() for line in file.readlines()]

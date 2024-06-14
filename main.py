@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk  # Ensure you have the Pillow library installed
 import databaseAccessor
 import combine  # Ensure you have combine.py in your project
 
@@ -49,36 +50,67 @@ class StartPage(tk.Frame):
                            command=lambda: controller.show_frame("ClonePage"))
         cloneButton.pack()
 
+
 class ClonePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        
+        # Layout configuration
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
+
         label = tk.Label(self, text="This is the clone page")
-        label.pack(pady=10, padx=10)
+        label.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
         
         # Create a button to go to Combine Page
         button = tk.Button(self, text="Back",
                            command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        button.grid(row=1, column=0, pady=10, padx=10)
 
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
-        self.entry1.pack(pady=10, padx=10)
+        self.entry1.grid(row=2, column=0, pady=10, padx=10)
+
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.grid(row=3, column=0, pady=10, padx=10)
 
         button1 = tk.Button(self, text="Find Card",
                             command=lambda: self.getCard(controller.input_text.get()))
-        button1.pack()
+        button1.grid(row=4, column=0, pady=10, padx=10)
 
-        def getCard(self, cardName):
-            card = databaseAccessor.fetch_card_by_name(cardName)
-            if card:
-                # Display a green checkmark if card is found
-                self.display_label1.config(text="✓", fg="green")
-                self.controller.card1 = card
-            else:
-                # Display a red cross if card is not found
-                self.display_label1.config(text="✗", fg="red")
-                self.controller.card1 = None
-            print(card)
+        self.image_label = tk.Label(self)
+        self.image_label.grid(row=0, column=1, rowspan=6, pady=10, padx=10)
+
+    def getCard(self, cardName):
+        card = databaseAccessor.fetch_card_by_name(cardName)
+        if card:
+            # Display a green checkmark if card is found
+            self.display_label1.config(text="✓", fg="green")
+            self.controller.card1 = card
+            image_path = f'images/{card["mainCard"][0]}.jpg'
+            self.display_card_image(image_path)
+            
+        else:
+            # Display a red cross if card is not found
+            self.display_label1.config(text="✗", fg="red")
+            self.controller.card1 = None
+        print(card)
+
+    def display_card_image(self, image_path):
+        try:
+            image = Image.open(image_path)
+            image = image.resize((250, 350))  # Resize image as needed
+            self.card_image = ImageTk.PhotoImage(image)
+            self.image_label.config(image=self.card_image)
+        except Exception as e:
+            print(f"Error loading image: {e}")
+            self.image_label.config(image='') 
 
 
 class CombinePage(tk.Frame):
