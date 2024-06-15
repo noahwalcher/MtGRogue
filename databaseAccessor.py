@@ -90,6 +90,8 @@ def download_card_images(card_names):
     image_folder = 'images'
     Path(image_folder).mkdir(parents=True, exist_ok=True)
 
+    success = True  # Initialize a flag to track the success status
+
     for name in card_names:
         result = fetch_card_by_name(name)
         if result:
@@ -102,14 +104,12 @@ def download_card_images(card_names):
                     oracle_id = main_card[0]
 
                     image_name = f"{oracle_id}.jpg"
-                    image_path = os.path.join(image_folder, image_name)                        
+                    image_path = os.path.join(image_folder, image_name)
 
                     # Check if image already exists
                     if os.path.exists(image_path):
-                        # print(f"Image for '{name}' already exists at '{image_path}', skipping download.")
                         continue
 
-    
                     if image_uri:
                         # Download image
                         response = requests.get(image_uri, stream=True, timeout=10)  # Timeout set to 10 seconds
@@ -122,7 +122,6 @@ def download_card_images(card_names):
                         print(f"No image URI found for '{name}'. Checking for faces...")
 
                         for index, face in enumerate(faces):
-
                             response = requests.get(face[4], stream=True, timeout=10)
                             response.raise_for_status()
 
@@ -135,14 +134,17 @@ def download_card_images(card_names):
                             with open(image_path, 'wb') as out_file:
                                 shutil.copyfileobj(response.raw, out_file)
                             print(f"Downloaded image for face of '{name}' to '{image_path}'")
-                    
+
                 except requests.exceptions.RequestException as e:
                     print(f"Failed to download image for '{name}': {str(e)}")
-                
+                    success = False  # Set the flag to False if any image download fails
+
         else:
             print(f"Card '{name}' not found in the database.")
+            success = False  # Set the flag to False if the card is not found
 
     conn.close()
+    return success  # Return the success status
 
 with open(r'C:\Users\noahw\devl\MtGRogueMachine\mtg_rogue.txt', 'r') as file:
     custom_words = [line.strip().lower() for line in file]
@@ -162,9 +164,10 @@ def main():
 
     best_match, score = process.extractOne(text, custom_words)
     print(f"best match -> {best_match.replace('ã»', 'û')}")
+    print(f"score here -> {score}")
 
      
-    print(f"Our text here!!!!!!!!!!!!!!!!!!!!! --> {best_match if score > 80 else text}")
+    print(f"Our text here!!--> {text}")
     return
     file_path = 'mtg_rogue.txt'
     with open(file_path, 'r', encoding='utf-8') as file:

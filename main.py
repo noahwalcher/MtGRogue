@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk  # Ensure you have the Pillow library installed
 import databaseAccessor
 import combine  # Ensure you have combine.py in your project
+import fetchAndPopulateDB
 
 class App(tk.Tk):
     def __init__(self):
@@ -18,7 +19,7 @@ class App(tk.Tk):
 
         # Initialize frames
         self.frames = {}
-        for F in (StartPage, CombinePage, ClonePage):
+        for F in (HomePage, CombinePage, ClonePage, ComputerPage):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
@@ -26,52 +27,118 @@ class App(tk.Tk):
             # Place all frames in the same location, but only the one that should be visible
             # is on the top of the stacking order
             frame.grid(row=0, column=0, sticky="nsew")
-        
-        self.show_frame("StartPage")
+        self.columnconfigure(0, weight=1)  # Ensure the main window expands properly
+        self.rowconfigure(0, weight=1)
+        self.show_frame("HomePage")
 
     def show_frame(self, page_name):
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
         frame.tkraise()
+    
+    def configure_grid(self, frame):
+        '''Configure the grid layout for a given frame'''
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=3)
+        frame.columnconfigure(2, weight=3)
+        frame.columnconfigure(3, weight=3)
+        frame.columnconfigure(4, weight=3)
+        frame.columnconfigure(5, weight=3)
+        frame.columnconfigure(6, weight=1)
+        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
+        frame.rowconfigure(2, weight=1)
+        frame.rowconfigure(3, weight=1)
+        frame.rowconfigure(4, weight=1)
+        frame.rowconfigure(5, weight=1)
+        frame.rowconfigure(6, weight=1)
 
 
-class StartPage(tk.Frame):
+class HomePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        label = tk.Label(self, text="This is the start page")
-        label.pack(pady=10, padx=10)
+        controller.configure_grid(self)
+
+        label = tk.Label(self, text="This is the Home page")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
         
-        # Create a button to go to Combine Page
-        button = tk.Button(self, text="Combine",
+        computerButton = tk.Button(self, text="Computer",
+                           command=lambda: controller.show_frame("ComputerPage"))
+        computerButton.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        ringCrafterButton = tk.Button(self, text="Ring Crafter",
+                           command=lambda: controller.show_frame("RingPage"))
+        ringCrafterButton.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        makeDBButton = tk.Button(self, text="Fetch Scryfall Data for DB",
+                           command=lambda: self.fetchAndPopulateDB())
+        makeDBButton.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.grid(row=3, column=3, pady=10, padx=10)
+
+        fetchImagesButton = tk.Button(self, text="Fetch Images for Cards",
+                           command=lambda: self.fetchCardImages())
+        fetchImagesButton.grid(row=4, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        self.display_label2 = tk.Label(self, text="")
+        self.display_label2.grid(row=4, column=3, pady=10, padx=10)
+        
+
+    def fetchAndPopulateDB(self):
+        if fetchAndPopulateDB.main():
+            self.display_label1.config(text="✓", fg="green")            
+        else:
+            self.display_label1.config(text="✗", fg="red")
+
+    def fetchCardImages(self):
+        file_path = 'mtg_rogue.txt'
+        with open(file_path, 'r', encoding='utf-8') as file:
+            card_names = [line.strip() for line in file.readlines()]
+
+        if databaseAccessor.download_card_images(card_names):
+            self.display_label2.config(text="✓", fg="green")            
+        else:
+            self.display_label2.config(text="✗", fg="red")
+
+class ComputerPage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        controller.configure_grid(self)
+
+        label = tk.Label(self, text="Computer")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
+
+        combineButton = tk.Button(self, text="Combine",
                            command=lambda: controller.show_frame("CombinePage"))
-        button.pack()
+        combineButton.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        upgradeButton = tk.Button(self, text="Upgrade",
+                           command=lambda: controller.show_frame("UpgradePage"))
+        upgradeButton.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
         cloneButton = tk.Button(self, text="Clone",
                            command=lambda: controller.show_frame("ClonePage"))
-        cloneButton.pack()
+        cloneButton.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("HomePage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
 
 class ClonePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        controller.configure_grid(self)
         
-        # Layout configuration
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, weight=1)
-        self.rowconfigure(4, weight=1)
-        self.rowconfigure(5, weight=1)
-
         label = tk.Label(self, text="This is the clone page")
         label.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
         
-        # Create a button to go to Combine Page
+        # Create a button to go to Start Page
         button = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("StartPage"))
+                           command=lambda: controller.show_frame("HomePage"))
         button.grid(row=1, column=0, pady=10, padx=10)
 
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
@@ -117,44 +184,43 @@ class CombinePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-
-        # Create a button to go back to Start Page
-        button = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        controller.configure_grid(self)
 
         label = tk.Label(self, text="This is the combine page")
-        label.pack(pady=10, padx=10)
+        label.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+        
+        # Create a button to go back to Start Page
+        button = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("HomePage"))
+        button.grid(row=1, column=0, pady=10, padx=10)
 
         # Create an Entry widget for text input
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
-        self.entry1.pack(pady=10, padx=10)
+        self.entry1.grid(row=2, column=0, pady=10, padx=10)
 
         # Placeholder for display label
         self.display_label1 = tk.Label(self, text="")
-        self.display_label1.pack(pady=10, padx=10)
+        self.display_label1.grid(row=3, column=0, pady=10, padx=10)
 
         button1 = tk.Button(self, text="Find Card",
                             command=lambda: self.getCard(controller.input_text.get()))
-        button1.pack()
+        button1.grid(row=4, column=0, pady=10, padx=10)
 
         self.entry2 = tk.Entry(self, textvariable=controller.input_text2)
-        self.entry2.pack(pady=10, padx=10)
+        self.entry2.grid(row=5, column=0, pady=10, padx=10)
 
         # Placeholder for display label
         self.display_label2 = tk.Label(self, text="")
-        self.display_label2.pack(pady=10, padx=10)
+        self.display_label2.grid(row=6, column=0, pady=10, padx=10)
 
         button2 = tk.Button(self, text="Find Card",
                             command=lambda: self.getCard2(controller.input_text2.get()))
-        button2.pack()
+        button2.grid(row=7, column=0, pady=10, padx=10)
 
         # Combine button (initially disabled)
         self.combine_button = tk.Button(self, text="Combine", state=tk.DISABLED,
                                         command=self.combine_cards)
-        self.combine_button.pack(pady=10, padx=10)
-
-        
+        self.combine_button.grid(row=8, column=0, pady=10, padx=10)
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
