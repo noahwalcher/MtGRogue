@@ -277,7 +277,10 @@ class CombinePage(tk.Frame):
     def combine_cards(self):
         card1 = self.controller.card1
         card2 = self.controller.card2
-        combine.combine(card1, card2)  # Call the combine method from combine.py
+        cardImages = combine.combine(card1, card2)
+        
+        for index, image in enumerate(cardImages):
+            image.save(f"{index}.png")
         print("Cards combined")
 
 if __name__ == "__main__":
