@@ -3,6 +3,7 @@ from PIL import Image, ImageTk  # Ensure you have the Pillow library installed
 import databaseAccessor
 import combine  # Ensure you have combine.py in your project
 import fetchAndPopulateDB
+import ringcrafterLists
 
 class App(tk.Tk):
     def __init__(self):
@@ -19,7 +20,7 @@ class App(tk.Tk):
 
         # Initialize frames
         self.frames = {}
-        for F in (HomePage, CombinePage, ClonePage, ComputerPage):
+        for F in (HomePage, CombinePage, ClonePage, ComputerPage, RingPage):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
@@ -290,18 +291,63 @@ class RingPage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         controller.configure_grid(self)
-        
+        self.triggers = ringcrafterLists.getRandomTriggers()
+        self.effects = ringcrafterLists.getRandomEffects()
+        self.currentTriggerIndex = 0
+        self.currentEffectIndex = 0
 
-    def update_label(self):
-        self.label.config(text=self.strings[self.current_index])
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("HomePage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
 
-    def prev_string(self):
-        self.current_index = (self.current_index - 1) % len(self.strings)
-        self.update_label()
+        pageLabel = tk.Label(self, text="Ringcrafter")
+        pageLabel.grid(row=0, column=3, pady=10, padx=10, sticky="nsew")
 
-    def next_string(self):
-        self.current_index = (self.current_index + 1) % len(self.strings)
-        self.update_label()
+        self.triggerLabel = tk.Label(self, text=self.triggers[self.currentTriggerIndex], font=('Arial', 16))
+        self.triggerLabel.grid(row=1, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+        self.prev_button = tk.Button(self, text='←', command=self.prevTrigger)
+        self.prev_button.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
+
+        self.next_button = tk.Button(self, text='→', command=self.nextTrigger)
+        self.next_button.grid(row=1, column=5, pady=10, padx=10, sticky="nsew")
+
+        self.effectLabel = tk.Label(self, text=self.effects[self.currentEffectIndex], font=('Arial', 16))
+        self.effectLabel.grid(row=2, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+        self.prevEffectButton = tk.Button(self, text='←', command=self.prevEffect)
+        self.prevEffectButton.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
+
+        self.nextEffectButton = tk.Button(self, text='→', command=self.nextEffect)
+        self.nextEffectButton.grid(row=2, column=5, pady=10, padx=10, sticky="nsew")
+
+        self.craftButton = tk.Button(self, text='Craft', command=self.craft)
+        self.craftButton.grid(row=3, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+    def updateTriggerLabel(self):
+        self.triggerLabel.config(text=self.triggers[self.currentTriggerIndex])
+
+    def prevTrigger(self):
+        self.currentTriggerIndex = (self.currentTriggerIndex - 1) % len(self.triggers)
+        self.updateTriggerLabel()
+
+    def nextTrigger(self):
+        self.currentTriggerIndex = (self.currentTriggerIndex + 1) % len(self.triggers)
+        self.updateTriggerLabel()
+
+    def updateEffectLabel(self):
+        self.effectLabel.config(text=self.effects[self.currentEffectIndex])
+
+    def prevEffect(self):
+        self.currentEffectIndex = (self.currentEffectIndex - 1) % len(self.effects)
+        self.updateEffectLabel()
+
+    def nextEffect(self):
+        self.currentEffectIndex = (self.currentEffectIndex + 1) % len(self.effects)
+        self.updateEffectLabel()
+
+    def craft(self):
+        print()#TODO print out crafted ring
 
 if __name__ == "__main__":
     app = App()
