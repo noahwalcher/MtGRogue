@@ -15,7 +15,8 @@ triggers = [
     "Whenever you gain life",
     "Whenever you lose life",
     "At the beginning of your upkeep, if you have no cards in hand",
-    "Whenever you cast your second spell each turn"
+    "Whenever you cast your second spell each turn",
+    "At the beginning of your upkeep, if you have delirium"
 ]
 
 effects = [
