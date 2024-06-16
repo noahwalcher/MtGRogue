@@ -1,42 +1,82 @@
+companions = [
+    "Companion — You have discarded a card this turn",
+    "Companion — You control an artifact",
+    "Companion — You control a zombie",
+    "Companion — Delirium",
+    "Companion — Hellbent",
+    "Companion — You have sacrificed a creature this turn",
+    "Companion — You have gained life this turn",
+    "Companion — You have lost life this turn",
+    "Companion — A card has left your graveyard this turn",
+]
+
 creatureUpgrades = [
-    "+1 Power",
-    "+1 Toughness",
-    "Reduce mana cost",
+    "This creature gets +1/+0",
+    "This creature gets +0/+1",
+    "This creature costs {1} less to cast",
     "Trample",
     "Vigilance",
     "Lifelink",
-    "Unearth for mana cost",
+    "Unearth equal to mana cost",
     "Dredge 1",
     "Cycling {1}",
     "Delve",
-    "Whenever you lose life get a +1/+1 counter",
+    "Whenever you lose life put a +1/+1 counter on this creature",
     "Amass 1",
     "When this creature enters the battlefield, create a food token",
     "When this creature dies, create a treasure token",
     "Haste",
     "Menace",
-    "Fabricate 1"
+    "Fabricate 1",
+    "Extort",
+    "Whenever this creature deals combat damage to an opponent, gain 1 gold."
 ]
 
 landUpgrades = [
-    "Exert - add {2}",
+    "{T}, Exert this land: Add {2}",
     "Cycling {1}",
     "Dredge 1",
-    "Add mana cost of {1}",
-    "{3}{T}: Amass 1",
-    "{2}: Return from graveyard to battlefield",
-    "When this land enters the battlefield, untap it",
-    "Pay 1 life, sacrifice a creature: Create a treasure token"
-]
-
-planeswalkerUpgrades = [
-    "Reduce mana cost",
-    "Random ability adds 2 more loyalty",
-    "All abilities add 1 more loyalty"
+    "You may cast this card for {1}.",
+    "{3}, {T}: Amass 1",
+    "{2}: Return this card from your graveyard to the battlefield under your control.",
+    "When this land enters the battlefield, untap it.",
+    "Pay 1 life, Sacrifice a creature, {T}: Create a treasure token.",
+    "{T}, Sacrifice this land: Search your library for a basic land card and put it onto the battlefield.",
+    "Delirium — {T}, Sacrifice this land: Return target card from your graveyard to your hand.",
+    "When this land enters the battlefield, it deals 1 damage to any target.",
+    "{2}, {T}, Sacrifice this land: Draw a card.",
+    "This land enters the battlefield tapped. When it does, surveil 1.",
+    "{4}: This land becomes a 1/1 Zombie creature with deathtouch until end of turn. It's still a land.",
+    "Play with the top card of your library revealed.",
+    "Channel — {2}, Discard this card: Gain 2 gold.",
+    "You may reveal this card from your opening hand. If you do, mill 4."
 ]
 
 spellUpgrades = [
-    "Flashback for mana cost",
+    "Flashback equal to mana cost",
     "Dredge 1",
     "Delve",
+    "This card costs {1} less to cast.",
+    "Amass 1",
+    "Surveil 1",
+    "Create a treasure token.",
+    "Create a blood token.",
+    "Create a food token.",
+    "Investigate.",
+    "Draw a card, then discard a card.",
+    "Lose 2 life. Return target card from your graveyard to your hand.",
+    "You may reveal this card from your opening hand. If you do, gain 3 gold.",
+    "Put a +1/+1 counter on target creature.",
+    "Put a -1/-1 counter on target creature.",
+    "Scry 2.",
+    "Discard a card, then draw a card",
+    "Cycling {1}",
+    "Target creature gets +1/-1 until end of turn.",
+    "Tap target creature.",
+    "Gain 1 life.",
+    "Lose 1 life.",
+    "Deal 1 damage to any target.",
+    "You may exchange 1 item for a random item.",
+    "Overload {5} (You may cast this spell for its overload cost. If you do, change “target” in its text to “each.”)"
+
 ]
