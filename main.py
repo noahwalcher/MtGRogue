@@ -133,39 +133,50 @@ class ClonePage(tk.Frame):
         self.controller = controller
         controller.configure_grid(self)
         
-        label = tk.Label(self, text="This is the clone page")
-        label.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+        label = tk.Label(self, text="Clone Card")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
         
-        # Create a button to go to Start Page
-        button = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("HomePage"))
-        button.grid(row=1, column=0, pady=10, padx=10)
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("ComputerPage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
+
+        cardLabel = tk.Label(self, text="Card 1")
+        cardLabel.grid(row=1, column=1, columnspan=2, pady=10, padx=10)
+
+        cameraButton = tk.Button(self, text="Take Picture",
+                           command=lambda: self.takePicture())
+        cameraButton.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
-        self.entry1.grid(row=2, column=0, pady=10, padx=10)
+        self.entry1.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        manualEntryButton = tk.Button(self, text="Enter",
+                            command=lambda: self.getCard(controller.input_text.get()))
+        manualEntryButton.grid(row=3, column=3, pady=10, padx=10, sticky="nsew")
 
         self.display_label1 = tk.Label(self, text="")
-        self.display_label1.grid(row=3, column=0, pady=10, padx=10)
+        self.display_label1.grid(row=4, column=1, columnspan=2, pady=10, padx=10)
 
-        button1 = tk.Button(self, text="Find Card",
-                            command=lambda: self.getCard(controller.input_text.get()))
-        button1.grid(row=4, column=0, pady=10, padx=10)
+        self.submitButton = tk.Button(self, text="Clone", state=tk.DISABLED,
+                           command=lambda: self.printCard())
+        self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
+    
+    def takePicture():
+        print()
 
-        self.image_label = tk.Label(self)
-        self.image_label.grid(row=0, column=1, rowspan=6, pady=10, padx=10)
+    def printCard():
+        print()
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            # Display a green checkmark if card is found
-            self.display_label1.config(text="✓", fg="green")
+            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
             self.controller.card1 = card
             image_path = f'images/{card["mainCard"][0]}.jpg'
-            self.display_card_image(image_path)
-            
+            self.submitButton.config(state=tk.NORMAL)
+
         else:
-            # Display a red cross if card is not found
-            self.display_label1.config(text="✗", fg="red")
+            self.display_label1.config(text=f"{cardName} not found", fg="red")
             self.controller.card1 = None
         print(card)
 
@@ -186,51 +197,61 @@ class CombinePage(tk.Frame):
         self.controller = controller
         controller.configure_grid(self)
 
-        label = tk.Label(self, text="This is the combine page")
-        label.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+        label = tk.Label(self, text="Combine Cards")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
         
-        # Create a button to go back to Start Page
-        button = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("HomePage"))
-        button.grid(row=1, column=0, pady=10, padx=10)
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("ComputerPage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
 
-        # Create an Entry widget for text input
+        cardLabel = tk.Label(self, text="Card 1")
+        cardLabel.grid(row=1, column=1, columnspan=2, pady=10, padx=10)
+
+        cameraButton = tk.Button(self, text="Take Picture",
+                           command=lambda: self.takePicture())
+        cameraButton.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
         self.entry1 = tk.Entry(self, textvariable=controller.input_text)
-        self.entry1.grid(row=2, column=0, pady=10, padx=10)
+        self.entry1.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
-        # Placeholder for display label
-        self.display_label1 = tk.Label(self, text="")
-        self.display_label1.grid(row=3, column=0, pady=10, padx=10)
-
-        button1 = tk.Button(self, text="Find Card",
+        manualEntryButton = tk.Button(self, text="Enter",
                             command=lambda: self.getCard(controller.input_text.get()))
-        button1.grid(row=4, column=0, pady=10, padx=10)
+        manualEntryButton.grid(row=3, column=3, pady=10, padx=10, sticky="nsew")
+
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.grid(row=4, column=1, columnspan=2, pady=10, padx=10)
+
+        cardLabel2 = tk.Label(self, text="Card 2")
+        cardLabel2.grid(row=1, column=4, columnspan=2, pady=10, padx=10)
+
+        cameraButton2 = tk.Button(self, text="Take Picture",
+                           command=lambda: self.takePicture())
+        cameraButton2.grid(row=2, column=4, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         self.entry2 = tk.Entry(self, textvariable=controller.input_text2)
-        self.entry2.grid(row=5, column=0, pady=10, padx=10)
+        self.entry2.grid(row=3, column=4, columnspan=2, pady=10, padx=10, sticky="nsew")
 
-        # Placeholder for display label
-        self.display_label2 = tk.Label(self, text="")
-        self.display_label2.grid(row=6, column=0, pady=10, padx=10)
-
-        button2 = tk.Button(self, text="Find Card",
+        manualEntryButton2 = tk.Button(self, text="Enter",
                             command=lambda: self.getCard2(controller.input_text2.get()))
-        button2.grid(row=7, column=0, pady=10, padx=10)
+        manualEntryButton2.grid(row=3, column=6, pady=10, padx=10, sticky="nsew")
 
-        # Combine button (initially disabled)
-        self.combine_button = tk.Button(self, text="Combine", state=tk.DISABLED,
-                                        command=self.combine_cards)
-        self.combine_button.grid(row=8, column=0, pady=10, padx=10)
+        self.display_label2 = tk.Label(self, text="")
+        self.display_label2.grid(row=4, column=4, columnspan=2, pady=10, padx=10)
+
+        self.submitButton = tk.Button(self, text="Combine", state=tk.DISABLED,
+                           command=lambda: self.combine_cards())
+        self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
+
+    def takePicture():
+        print()
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            # Display a green checkmark if card is found
-            self.display_label1.config(text="✓", fg="green")
+            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
             self.controller.card1 = card
         else:
-            # Display a red cross if card is not found
-            self.display_label1.config(text="✗", fg="red")
+            self.display_label1.config(text=f"{cardName} not found", fg="red")
             self.controller.card1 = None
         self.update_combine_button_state()
         print(card)
@@ -238,12 +259,10 @@ class CombinePage(tk.Frame):
     def getCard2(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            # Display a green checkmark if card is found
-            self.display_label2.config(text="✓", fg="green")
+            self.display_label2.config(text=f"{card["mainCard"][10]}", fg="green")
             self.controller.card2 = card
         else:
-            # Display a red cross if card is not found
-            self.display_label2.config(text="✗", fg="red")
+            self.display_label2.config(text=f"{cardName} not found", fg="red")
             self.controller.card2 = None
         self.update_combine_button_state()
         print(card)
@@ -251,9 +270,9 @@ class CombinePage(tk.Frame):
     def update_combine_button_state(self):
         # Enable the combine button only if both cards are found
         if self.controller.card1 and self.controller.card2:
-            self.combine_button.config(state=tk.NORMAL)
+            self.submitButton.config(state=tk.NORMAL)
         else:
-            self.combine_button.config(state=tk.DISABLED)
+            self.submitButton.config(state=tk.DISABLED)
 
     def combine_cards(self):
         card1 = self.controller.card1
