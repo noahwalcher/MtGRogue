@@ -60,10 +60,7 @@ def combine(cardOne, cardTwo):
     with open('id_counter.txt', 'w') as file:
             file.write(str(id))
 
-    return [cardImage]
-
-conn = sqlite3.connect('mtg_cards.db')
-cursor = conn.cursor()
+    return cardImage
 
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
 typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
@@ -622,10 +619,8 @@ def normalNormal(cardOne, cardTwo, id):
     if ('Instant' in typeLineOne and 'Instant' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Sorcery' in typeLineTwo):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         cardImage = createCardImage(card["card_faces"][0], "Frames/Fuse.png", fuseTitleCoord1, fuseTypeCoord1, fuseBodyCoord1, fuseManaCoord1, card2 = card["card_faces"][1], title2Coord=fuseTitleCoord2, type2Coord=fuseTypeCoord2, text2Coord=fuseBodyCoord2, manaCoord2=fuseManaCoord2 )
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage]
+        commitToDB(card)        
+        return cardImage
     elif ('Instant' in typeLineOne and 'Sorcery' in typeLineTwo) or ('Sorcery' in typeLineOne and 'Instant' in typeLineTwo):
         oracle_text_1 = cardOne['mainCard'][11]
         oracle_text_2 = cardTwo['mainCard'][11]
@@ -634,35 +629,27 @@ def normalNormal(cardOne, cardTwo, id):
         else:
             card = createTwoFaceCardObject(cardTwo, cardOne, id)
         cardImage = createCardImage(card["card_faces"][0], "Frames/Aftermath.png", standardTitleCoord, aftermathTypeCoord1, aftermathBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=aftermathTitleCoord, type2Coord=aftermathTypeCoord2, text2Coord=aftermathBodyCoord2, manaCoord2=aftermathManaCoord)
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage]
+        commitToDB(card)        
+        return cardImage
 
     elif 'Instant' in typeLineOne or 'Instant' in typeLineTwo or 'Sorcery' in typeLineOne or 'Sorcery' in typeLineTwo:
         if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne):
             cardOne, cardTwo = cardTwo, cardOne
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         cardImage = createCardImage(card["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage]
+        commitToDB(card)        
+        return cardImage
     elif ('Land' in typeLineOne or 'Land' in typeLineTwo) or ("X" in cardOne['mainCard'][9] or "X" in cardTwo['mainCard'][9]) or ("X" in cardOne['mainCard'][12] or "X" in cardOne['mainCard'][13] or "X" in cardTwo['mainCard'][12] or "X" in cardTwo['mainCard'][13]):
         card = createTwoFaceCardObject(cardOne, cardTwo, id)
         cardImage = createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
         cardImage2 = createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage, cardImage2]
+        commitToDB(card)        
+        return cardImage + cardImage2
     else:
         card = createSingleFaceCardObject(cardOne, cardTwo, id)
         cardImage = createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage]
+        commitToDB(card)        
+        return cardImage
 
 def normalSaga(cardOne, cardTwo, id):
     typeLineOne = cardOne['mainCard'][14]
@@ -672,26 +659,20 @@ def normalSaga(cardOne, cardTwo, id):
         if ('Instant' in typeLineOne or 'Sorcery' in typeLineOne or 'Land' in typeLineOne):
             cardImage = createCardImage(card["card_faces"][0], "Frames/12-3SagaMDFCFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
             cardImage2 = createCardImage(card["card_faces"][1], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-            fetchAndPopulateDB.insert_card_data(cursor, card)
-            conn.commit()
-            conn.close()
-            return [cardImage, cardImage2]
+            commitToDB(card)            
+            return cardImage + cardImage2
         else:
             cardImage = createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
             cardImage2 = createCardImage(card["card_faces"][1], "Frames/StandardTransformBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, card2=card["card_faces"][0])
-            fetchAndPopulateDB.insert_card_data(cursor, card)
-            conn.commit()
-            conn.close()
-            return [cardImage, cardImage2]
+            commitToDB(card)            
+            return cardImage + cardImage2
 
 def normalAdventure(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
     cardImage = createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     cardImage2 = createCardImage(card["card_faces"][2], "Frames/StandardMDFCBack.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-    fetchAndPopulateDB.insert_card_data(cursor, card)
-    conn.commit()
-    conn.close()
-    return [cardImage, cardImage2]
+    commitToDB(card)    
+    return cardImage + cardImage2
 
 def normalPlaneswalker(cardOne, cardTwo, id):
     card = createTwoFaceCardObject(cardOne, cardTwo, id)
@@ -704,10 +685,8 @@ def normalPlaneswalker(cardOne, cardTwo, id):
     if not hasPassive and len(planeswalkerAbilities) == 3:
         cardImage = createCardImage(card["card_faces"][0], "Frames/StandardMDFCFront.png", offsetTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][1])
         cardImage2 = createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-        fetchAndPopulateDB.insert_card_data(cursor, card)
-        conn.commit()
-        conn.close()
-        return [cardImage, cardImage2]
+        commitToDB(card)
+        return cardImage + cardImage2
 
 #Don't currently support saga/saga
 def sagaSaga(cardOne, cardTwo, id):
@@ -717,39 +696,39 @@ def sagaAdventure(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardTwo['faces'][0], cardTwo['faces'][1], cardOne, id)
     cardImage = createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     cardImage2 = createCardImage(card["card_faces"][2], "Frames/12-3SagaMDFCBack.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-    fetchAndPopulateDB.insert_card_data(cursor, card)
-    conn.commit()
-    conn.close()
-    return [cardImage, cardImage2]
+    commitToDB(card)
+    return cardImage + cardImage2
 
 #Only works for specifically formatted planeswalkers/sagas. Needs more logic to handle other cases
 def sagaPlaneswalker(cardOne, cardTwo, id):
     card = createTwoFaceCardObject(cardOne, cardTwo, id)
     cardImage = createCardImage(card["card_faces"][0], "Frames/12-3SagaTransformFront.png", offsetTitleCoord, sagaTypeCoord, saga2ChapterBodyCoord, standardManaCoord, card2=card["card_faces"][1])
     cardImage2 = createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerTransformBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, backCard=card["card_faces"][0])
-    fetchAndPopulateDB.insert_card_data(cursor, card)
-    conn.commit()
-    conn.close()
-    return [cardImage, cardImage2]
+    commitToDB(card)
+    return cardImage + cardImage2
 
 def adventureAdventure(cardOne, cardTwo, id):
     card = createFourFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo['faces'][0], cardTwo['faces'][1], id)
     cardImage = createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     cardImage2 = createCardImage(card["card_faces"][2], "Frames/AdventureMDFCBack.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][0] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][3], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
-    fetchAndPopulateDB.insert_card_data(cursor, card)
-    conn.commit()
-    conn.close()
-    return [cardImage, cardImage2]
+    commitToDB(card)    
+    return cardImage + cardImage2
 
 def adventurePlaneswalker(cardOne, cardTwo, id):
     card = createThreeFaceCardObject(cardOne['faces'][0], cardOne['faces'][1], cardTwo, id)
     cardImage = createCardImage(card["card_faces"][0], "Frames/AdventureMDFCFront.png", offsetTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, backCard=card["card_faces"][2] ,flipsideTitleCoords=flipsideTitleCoord, card2=card["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     cardImage2 = createCardImage(card["card_faces"][2], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, flipsideTitleCoords=flipsideTitleCoord, backCard=card["card_faces"][0])
-    fetchAndPopulateDB.insert_card_data(cursor, card)
-    conn.commit()
-    conn.close()
-    return [cardImage, cardImage2]
+    commitToDB(card)
+    return cardImage + cardImage2
 
 #Don't currently have 2 planeswalkers in the list
 def planeswalkerPlaneswalker(cardOne, cardTwo, id):
     print()
+
+def commitToDB(card):
+    conn = sqlite3.connect('mtg_cards.db')
+    cursor = conn.cursor()
+    fetchAndPopulateDB.insert_card_data(cursor, card)
+    conn.commit()
+    conn.close()
+    

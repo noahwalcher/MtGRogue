@@ -146,7 +146,7 @@ def download_card_images(card_names):
     conn.close()
     return success  # Return the success status
 
-with open(r'C:\Users\noahw\devl\MtGRogueMachine\mtg_rogue.txt', 'r') as file:
+with open('mtg_rogue.txt', 'r') as file:
     custom_words = [line.strip().lower() for line in file]
 
 def main():

@@ -278,10 +278,30 @@ class CombinePage(tk.Frame):
         card1 = self.controller.card1
         card2 = self.controller.card2
         cardImages = combine.combine(card1, card2)
-        
-        for index, image in enumerate(cardImages):
-            image.save(f"{index}.png")
+        #TODO replace .save with print method
+        cardImages[0].save(f"1.png")
+        if len(cardImages) == 2:
+            cardImages[1].save(f"2.png")
+
         print("Cards combined")
+
+class RingPage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        controller.configure_grid(self)
+        
+
+    def update_label(self):
+        self.label.config(text=self.strings[self.current_index])
+
+    def prev_string(self):
+        self.current_index = (self.current_index - 1) % len(self.strings)
+        self.update_label()
+
+    def next_string(self):
+        self.current_index = (self.current_index + 1) % len(self.strings)
+        self.update_label()
 
 if __name__ == "__main__":
     app = App()
