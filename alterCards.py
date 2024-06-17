@@ -5,6 +5,54 @@ import sqlite3
 from PIL import Image, ImageDraw, ImageFont
 import fetchAndPopulateDB
 
+
+
+titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
+typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
+bodyFont = ImageFont.truetype("Fonts/mplantin.ttf", size=14)
+flipsideTitleFont = ImageFont.truetype("Fonts/mplantin.ttf", size=12)
+
+standardTitleCoord = (32, 28)
+offsetTitleCoord = (59, 28)
+fuseTitleCoord1 = (49, 23)
+fuseTitleCoord2 = (290, 23)
+adventureTitleCoord = (32, 331)
+offsetPlaneswalkerTitleCoord = (63, 19)
+aftermathTitleCoord = (295, 30)
+
+standardTypeCoord = (33, 298)
+fullTextTypeCoord = (33, 65)
+fuseTypeCoord1 = (48, 210)
+fuseTypeCoord2 = (289, 210)
+adventureTypeCoord = (33, 355)
+aftermathTypeCoord1 = (31, 185)
+aftermathTypeCoord2 = (296, 177)
+sagaTypeCoord = (33, 445)
+
+standardBodyCoord = (33, 332, 339, 480)
+fullTextBodyCoord = (33, 98, 339, 467)
+fuseBodyCoord1 = (48, 237, 251, 330)
+fuseBodyCoord2 = (289, 237, 492, 330)
+adventureBodyCoord1 = (194, 332, 347, 479)
+adventureBodyCoord2 = (33, 379, 183, 479)
+aftermathBodyCoord1 = (33, 218, 342, 275)
+aftermathBodyCoord2 = (303, 260, 473, 342)
+saga2ChapterBodyCoord = ((44, 158, 182, 293), (44, 299, 182, 435))
+planeswalker3BodyCoord = ((65, 330, 343, 375),(65, 386, 343, 423),(65, 432, 343, 467))
+planeswalker3AbilityModifierCoords = ((36, 358), (36, 403), (36, 448))
+planeswalkerStartingLoyaltyCoord = (333, 484)
+
+#3rd/4th number are the size of the mana symbols
+standardManaCoord = (346, 31, 17, 18)
+fuseManaCoord1 = (256, 28, 15, 16)
+fuseManaCoord2 = (498, 28, 15, 16)
+MDFCManaCoord = (160, 472, 11, 11)
+adventureManaCoord = (180, 333, 14, 15)
+aftermathManaCoord = (476, 34, 17, 18)
+planeswalkerManaCoord = (347, 23, 17, 17)
+
+flipsideTitleCoord = (27, 473)
+
 def combine(cardOne, cardTwo):
     if os.path.exists('id_counter.txt'):
         with open('id_counter.txt', 'r') as file:
@@ -62,52 +110,33 @@ def combine(cardOne, cardTwo):
 
     return cardImage
 
-titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
-typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
-bodyFont = ImageFont.truetype("Fonts/mplantin.ttf", size=14)
-flipsideTitleFont = ImageFont.truetype("Fonts/mplantin.ttf", size=12)
+def upgrade(card, ability):
+    if card['mainCard'][3]:
+        card["faces"][0][11] = f"{ability} \n {card["faces"][0][11]}"
+    else:
+        card['mainCard'][11] = f"{ability} \n {card['mainCard'][11]}"
+        cardImage = createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
+#TODO finish upgrade
 
-standardTitleCoord = (32, 28)
-offsetTitleCoord = (59, 28)
-fuseTitleCoord1 = (49, 23)
-fuseTitleCoord2 = (290, 23)
-adventureTitleCoord = (32, 331)
-offsetPlaneswalkerTitleCoord = (63, 19)
-aftermathTitleCoord = (295, 30)
+    
 
-standardTypeCoord = (33, 298)
-fullTextTypeCoord = (33, 65)
-fuseTypeCoord1 = (48, 210)
-fuseTypeCoord2 = (289, 210)
-adventureTypeCoord = (33, 355)
-aftermathTypeCoord1 = (31, 185)
-aftermathTypeCoord2 = (296, 177)
-sagaTypeCoord = (33, 445)
 
-standardBodyCoord = (33, 332, 339, 480)
-fullTextBodyCoord = (33, 98, 339, 467)
-fuseBodyCoord1 = (48, 237, 251, 330)
-fuseBodyCoord2 = (289, 237, 492, 330)
-adventureBodyCoord1 = (194, 332, 347, 479)
-adventureBodyCoord2 = (33, 379, 183, 479)
-aftermathBodyCoord1 = (33, 218, 342, 275)
-aftermathBodyCoord2 = (303, 260, 473, 342)
-saga2ChapterBodyCoord = ((44, 158, 182, 293), (44, 299, 182, 435))
-planeswalker3BodyCoord = ((65, 330, 343, 375),(65, 386, 343, 423),(65, 432, 343, 467))
-planeswalker3AbilityModifierCoords = ((36, 358), (36, 403), (36, 448))
-planeswalkerStartingLoyaltyCoord = (333, 484)
+def getUpgradeType(card):
+    if card['mainCard'][3]:
+        typeLine = card["faces"][0][10]
+    else:
+        typeLine = card['mainCard'][14]
 
-#3rd/4th number are the size of the mana symbols
-standardManaCoord = (346, 31, 17, 18)
-fuseManaCoord1 = (256, 28, 15, 16)
-fuseManaCoord2 = (498, 28, 15, 16)
-MDFCManaCoord = (160, 472, 11, 11)
-adventureManaCoord = (180, 333, 14, 15)
-aftermathManaCoord = (476, 34, 17, 18)
-planeswalkerManaCoord = (347, 23, 17, 17)
-
-flipsideTitleCoord = (27, 473)
-
+    if "Creature" in typeLine:
+        return "Creature"
+    elif "Land" in typeLine:
+        return "Land"
+    elif "Instant" in typeLine or "Sorcery" in typeLine:
+        return "Spell"
+    elif ("Artifact" in typeLine or "Enchantment" in typeLine) and "Saga" not in typeLine:
+        return "ArtifactEnchantment"
+    else:
+        return "Invalid"
 
 def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, bounding_box):
     font = ImageFont.truetype(fontPath, fontSize)
@@ -213,7 +242,6 @@ def getMainType(typeLine):
     else:
         return ""
   
-#Pass the face in if card is multifaced
 def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord, flipsideTitleCoords = None, backCard = None, card2 = None, title2Coord = None, type2Coord = None, text2Coord = None, manaCoord2 = None, databaseCard = None):
     frame = Image.open(framePath)
     draw = ImageDraw.Draw(frame)

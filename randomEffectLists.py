@@ -83,7 +83,12 @@ creatureUpgrades = [
     "Flash",
     "Exploit (When this creature enters the battlefield, you may sacrifice a creature.)",
     "{T}: Add {1}",
-    "Changeling (This card is every creature type.)"
+    "Changeling (This card is every creature type.)",
+    "Deathtouch",
+    "First strike",
+    "Double strike",
+    "Flying",
+    "Hexproof"
 ]
 
 artifactEnchantmentUpgrades = [

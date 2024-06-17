@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import requests
 import shutil
-import combine
 from PIL import Image, ImageOps, ImageEnhance
 import pytesseract
 from fuzzywuzzy import process

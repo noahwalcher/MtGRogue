@@ -199,7 +199,7 @@ class ClonePage(tk.Frame):
             print(f"Error loading image: {e}")
             self.image_label.config(image='') 
 
-
+#TODO handle cases where cards are not eligible
 class CombinePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -307,8 +307,103 @@ class UpgradePage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         controller.configure_grid(self)
-        self.upgrades = []
+        self.bind("<<ShowFrame>>", self.onShow)
+        self.upgrades = ["","",""]
         self.currentUpgradeIndex = 0
+
+        label = tk.Label(self, text="Upgrade Card")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
+
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("ComputerPage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
+
+        cameraButton = tk.Button(self, text="Take Picture",
+                           command=lambda: self.takePicture())
+        cameraButton.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        self.entry1 = tk.Entry(self, textvariable=controller.input_text)
+        self.entry1.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        manualEntryButton = tk.Button(self, text="Enter",
+                            command=lambda: self.getCard(controller.input_text.get()))
+        manualEntryButton.grid(row=2, column=3, pady=10, padx=10, sticky="nsew")
+
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.grid(row=3, column=1, columnspan=2, pady=10, padx=10)
+
+        self.upgradeLabel = tk.Label(self, text=self.upgrades[self.currentUpgradeIndex], font=('Arial', 16))
+        self.upgradeLabel.grid(row=4, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+        self.prev_button = tk.Button(self, text='←', command=self.prevUpgrade)
+        self.prev_button.grid(row=4, column=1, pady=10, padx=10, sticky="nsew")
+
+        self.next_button = tk.Button(self, text='→', command=self.nextUpgrade)
+        self.next_button.grid(row=4, column=5, pady=10, padx=10, sticky="nsew")
+
+        self.submitButton = tk.Button(self, text="Upgrade", state=tk.DISABLED,
+                           command=lambda: self.upgrade())
+        self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
+
+    def onShow(self, event):
+        self.display_label1.config(text="")
+        self.currentUpgradeIndex = 0
+        self.upgrades = ["","",""]
+        self.updateUpgradeLabel()
+
+    def upgrade(self):
+        alterCards.upgrade(self.controller.card1, self.upgrade[self.currentUpgradeIndex])
+
+    def getCard(self, cardName):
+        card = databaseAccessor.fetch_card_by_name(cardName)
+        if card:
+            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.controller.card1 = card
+            self.getUpgradeType()
+            self.updateSubmitButtonState()
+        else:
+            self.display_label1.config(text=f"{cardName} not found", fg="red")
+            self.controller.card1 = None
+            self.updateSubmitButtonState()
+            self.upgrades = ["","",""]
+            self.updateUpgradeLabel()
+        print(card)
+
+    def updateSubmitButtonState(self):
+        # Enable the combine button only if both cards are found
+        if self.controller.card1:
+            self.submitButton.config(state=tk.NORMAL)
+        else:
+            self.submitButton.config(state=tk.DISABLED)
+
+    def takePicture():
+        #TODO
+        print()
+
+    def getUpgradeType(self):
+        type = alterCards.getUpgradeType(self.controller.card1)
+        if type == "Creature":
+            self.upgrades = randomEffectLists.getRandomCreatureUpgrades()
+        if type == "Spell":
+            self.upgrades = randomEffectLists.getRandomSpellUpgrades()
+        if type == "Land":
+            self.upgrades = randomEffectLists.getRandomLandUpgrades()
+        if type == "ArtifactEnchantment":
+            self.upgrades = randomEffectLists.getRandomArtifactEnchantmentUpgrades()
+
+        self.updateUpgradeLabel()
+
+    def updateUpgradeLabel(self):
+        self.upgradeLabel.config(text=self.upgrades[self.currentUpgradeIndex])
+
+    def prevUpgrade(self):
+        self.currentUpgradeIndex = (self.currentUpgradeIndex - 1) % len(self.upgrades)
+        self.updateUpgradeLabel()
+
+    def nextUpgrade(self):
+        self.currentUpgradeIndex = (self.currentUpgradeIndex + 1) % len(self.upgrades)
+        self.updateUpgradeLabel()
+
 
 class RingPage(tk.Frame):
     def __init__(self, parent, controller):
