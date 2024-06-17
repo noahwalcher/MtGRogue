@@ -69,7 +69,7 @@ def combine(cardOne, cardTwo):
         elif "Planeswalker" in cardTwo['mainCard'][14]:
             cardImage = normalPlaneswalker(cardOne, cardTwo, id)
         else:
-            print("Not sure what to do with these cards")
+            return "Invalid"
     elif cardOne['mainCard'][1] == "saga":
         if (cardTwo['mainCard'][1] == "normal" and "Planeswalker" not in cardTwo['mainCard'][14]):
             cardImage = normalSaga(cardTwo, cardOne, id)
@@ -80,7 +80,7 @@ def combine(cardOne, cardTwo):
         elif "Planeswalker" in cardTwo['mainCard'][14]:
             cardImage = sagaPlaneswalker(cardOne, cardTwo, id)
         else:
-            print("Not sure what to do with these cards")
+            return "Invalid"
     elif cardOne['mainCard'][1] == "adventure":
         if (cardTwo['mainCard'][1] == "normal" and "Planeswalker" not in cardTwo['mainCard'][14]):
             cardImage = normalAdventure(cardTwo, cardOne, id)
@@ -91,7 +91,7 @@ def combine(cardOne, cardTwo):
         elif "Planeswalker" in cardTwo['mainCard'][14]:
             cardImage = adventurePlaneswalker(cardOne, cardTwo, id)
         else:
-            print("Not sure what to do with these cards")
+            return "Invalid"
     elif "Planeswalker" in cardOne['mainCard'][14]:
         if (cardTwo['mainCard'][1] == "normal" and "Planeswalker" not in cardTwo['mainCard'][14]):
             cardImage = normalPlaneswalker(cardTwo, cardOne, id)
@@ -102,7 +102,9 @@ def combine(cardOne, cardTwo):
         elif "Planeswalker" in cardTwo['mainCard'][14]:
             cardImage = planeswalkerPlaneswalker(cardOne, cardTwo, id)
         else:
-            print("Not sure what to do with these cards")
+            return "Invalid"
+    else:
+        return "Invalid"
 
     id += 1
     with open('id_counter.txt', 'w') as file:
@@ -116,32 +118,28 @@ def upgrade(card, ability):
             id = int(file.read().strip())
     else:
             id = 1
+    
+    cardObject = createUpgradeCardObject(card, ability, id)
 
-    if card['mainCard'][3]:
-        card["faces"][0][11] = f"{ability} \n {card["faces"][0][11]}"
-        card = createUpgradeCardObject(card, ability, id)
-
+    if cardObject['card_faces']:
+        print("in faces")
         if card['mainCard'][1] == "adventure":
-            cardImage = createCardImage(card["faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
-
+            cardImage = createCardImage(cardObject["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=cardObject["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     else:
-        #card['mainCard'][11] = f"{ability} \n {card['mainCard'][11]}"
-        card = createUpgradeCardObject(card, ability, id)
-        cardImage = createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
+        cardImage = createCardImage(cardObject, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
 
     id += 1
     with open('id_counter.txt', 'w') as file:
             file.write(str(id))
 
     return cardImage
-#TODO finish upgrade
-
-    
-
 
 def getUpgradeType(card):
     if card['mainCard'][3]:
-        typeLine = card["faces"][0][10]
+        if card['mainCard'][1] == "adventure":
+            typeLine = card["faces"][0][10]
+        else:
+            return "Invalid"
     else:
         typeLine = card['mainCard'][14]
 
@@ -828,6 +826,11 @@ def adventurePlaneswalker(cardOne, cardTwo, id):
 
 #Don't currently have 2 planeswalkers in the list
 def planeswalkerPlaneswalker(cardOne, cardTwo, id):
+    card = createTwoFaceCardObject(cardOne, cardTwo, id)
+    cardImage = createCardImage(card["card_faces"][0], "Frames/3PlaneswalkerMDFCFront.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, backCard=card["card_faces"][1], flipsideTitleCoords=flipsideTitleCoord)
+    cardImage2 = createCardImage(card["card_faces"][1], "Frames/3PlaneswalkerMDFCBack.png", offsetPlaneswalkerTitleCoord, standardTypeCoord, planeswalker3BodyCoord, planeswalkerManaCoord, backCard=card["card_faces"][0], flipsideTitleCoords=flipsideTitleCoord)
+    commitToDB(card)
+    return cardImage + cardImage2
     print()
 
 def commitToDB(card):

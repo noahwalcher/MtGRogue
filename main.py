@@ -20,7 +20,7 @@ class App(tk.Tk):
 
         # Initialize frames
         self.frames = {}
-        for F in (HomePage, CombinePage, ClonePage, ComputerPage, RingPage, UpgradePage):
+        for F in (HomePage, CombinePage, ClonePage, ComputerPage, RingPage, UpgradePage, CompanionPage):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
@@ -76,19 +76,23 @@ class HomePage(tk.Frame):
                            command=lambda: controller.show_frame("RingPage"))
         ringCrafterButton.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
+        companionButton = tk.Button(self, text="Companion",
+                           command=lambda: controller.show_frame("CompanionPage"))
+        companionButton.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
         makeDBButton = tk.Button(self, text="Fetch Scryfall Data for DB",
                            command=lambda: self.fetchAndPopulateDB())
-        makeDBButton.grid(row=3, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+        makeDBButton.grid(row=4, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         self.display_label1 = tk.Label(self, text="")
-        self.display_label1.grid(row=3, column=3, pady=10, padx=10)
+        self.display_label1.grid(row=4, column=3, pady=10, padx=10)
 
         fetchImagesButton = tk.Button(self, text="Fetch Images for Cards",
                            command=lambda: self.fetchCardImages())
-        fetchImagesButton.grid(row=4, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+        fetchImagesButton.grid(row=5, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         self.display_label2 = tk.Label(self, text="")
-        self.display_label2.grid(row=4, column=3, pady=10, padx=10)
+        self.display_label2.grid(row=5, column=3, pady=10, padx=10)
         
 
     def fetchAndPopulateDB(self):
@@ -199,7 +203,6 @@ class ClonePage(tk.Frame):
             print(f"Error loading image: {e}")
             self.image_label.config(image='') 
 
-#TODO handle cases where cards are not eligible
 class CombinePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -294,14 +297,118 @@ class CombinePage(tk.Frame):
         card1 = self.controller.card1
         card2 = self.controller.card2
         cardImages = alterCards.combine(card1, card2)
-        #TODO replace .save with print method
+        if cardImages == "Invalid":
+            self.controller.card1 = None
+            self.controller.card2 = None
+            self.display_label1.config(text="This combination of cards is not possible.", fg="red")
+            self.display_label2.config(text="This combination of cards is not possible.", fg="red")
+            self.update_combine_button_state()
+        else:
+            #TODO replace .save with print method
+            cardImages[0].save(f"1.png")
+            if len(cardImages) == 2:
+                cardImages[1].save(f"2.png")
+
+            print("Cards combined")
+
+class CompanionPage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        controller.configure_grid(self)
+        self.bind("<<ShowFrame>>", self.onShow)
+        self.companions = ["","",""]
+        self.currentCompanionIndex = 0
+
+        label = tk.Label(self, text="Make Companion")
+        label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
+
+        homeButton = tk.Button(self, text="Back",
+                           command=lambda: controller.show_frame("HomePage"))
+        homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
+
+        cameraButton = tk.Button(self, text="Take Picture",
+                           command=lambda: self.takePicture())
+        cameraButton.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        self.entry1 = tk.Entry(self, textvariable=controller.input_text)
+        self.entry1.grid(row=2, column=1, columnspan=2, pady=10, padx=10, sticky="nsew")
+
+        manualEntryButton = tk.Button(self, text="Enter",
+                            command=lambda: self.getCard(controller.input_text.get()))
+        manualEntryButton.grid(row=2, column=3, pady=10, padx=10, sticky="nsew")
+
+        self.display_label1 = tk.Label(self, text="")
+        self.display_label1.grid(row=3, column=1, columnspan=2, pady=10, padx=10)
+
+        self.companionLabel = tk.Label(self, text=self.companions[self.currentCompanionIndex], font=('Arial', 16))
+        self.companionLabel.grid(row=4, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+        self.prev_button = tk.Button(self, text='←', command=self.prevCompanion)
+        self.prev_button.grid(row=4, column=1, pady=10, padx=10, sticky="nsew")
+
+        self.next_button = tk.Button(self, text='→', command=self.nextCompanion)
+        self.next_button.grid(row=4, column=5, pady=10, padx=10, sticky="nsew")
+
+        self.submitButton = tk.Button(self, text="Make Companion", state=tk.DISABLED,
+                           command=lambda: self.makeCompanion())
+        self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
+
+    def onShow(self, event):
+        self.display_label1.config(text="")
+        self.currentCompanionIndex = 0
+        self.companions = ["","",""]
+        self.updateCompanionLabel()
+
+    def makeCompanion(self):
+        cardImages = alterCards.upgrade(self.controller.card1, self.companions[self.currentCompanionIndex])
         cardImages[0].save(f"1.png")
-        if len(cardImages) == 2:
-            cardImages[1].save(f"2.png")
 
-        print("Cards combined")
 
-#TODO upgrade page
+    def getCard(self, cardName):
+        card = databaseAccessor.fetch_card_by_name(cardName)
+        if card:
+            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.controller.card1 = card
+            self.getCompanionType()
+            self.updateSubmitButtonState()
+        else:
+            self.display_label1.config(text=f"{cardName} not found", fg="red")
+            self.controller.card1 = None
+            self.updateSubmitButtonState()
+            self.companions = ["","",""]
+            self.updateCompanionLabel()
+        print(card)
+
+    def updateSubmitButtonState(self):
+        if self.controller.card1 and self.companions[self.currentCompanionIndex] != "":
+            self.submitButton.config(state=tk.NORMAL)
+        else:
+            self.submitButton.config(state=tk.DISABLED)
+
+    def takePicture():
+        #TODO
+        print()
+
+    def getCompanionType(self):
+        type = alterCards.getUpgradeType(self.controller.card1)
+        if type == "Creature":
+            self.companions = randomEffectLists.getRandomCompanion()
+        else:
+            self.companions = ['','','']
+        self.updateCompanionLabel()
+
+    def updateCompanionLabel(self):
+        self.companionLabel.config(text=self.companions[self.currentCompanionIndex])
+
+    def prevCompanion(self):
+        self.currentCompanionIndex = (self.currentCompanionIndex - 1) % len(self.companions)
+        self.updateCompanionLabel()
+
+    def nextCompanion(self):
+        self.currentCompanionIndex = (self.currentCompanionIndex + 1) % len(self.companions)
+        self.updateCompanionLabel()
+
 class UpgradePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -315,7 +422,7 @@ class UpgradePage(tk.Frame):
         label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
 
         homeButton = tk.Button(self, text="Back",
-                           command=lambda: controller.show_frame("ComputerPage"))
+                           command=lambda: controller.show_frame("HomePage"))
         homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
 
         cameraButton = tk.Button(self, text="Take Picture",
