@@ -352,7 +352,11 @@ class UpgradePage(tk.Frame):
         self.updateUpgradeLabel()
 
     def upgrade(self):
-        alterCards.upgrade(self.controller.card1, self.upgrade[self.currentUpgradeIndex])
+        cardImages = alterCards.upgrade(self.controller.card1, self.upgrades[self.currentUpgradeIndex])
+        cardImages[0].save(f"1.png")
+        if len(cardImages) == 2:
+            cardImages[1].save(f"2.png")
+
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
@@ -370,8 +374,7 @@ class UpgradePage(tk.Frame):
         print(card)
 
     def updateSubmitButtonState(self):
-        # Enable the combine button only if both cards are found
-        if self.controller.card1:
+        if self.controller.card1 and self.upgrades[self.currentUpgradeIndex] != "":
             self.submitButton.config(state=tk.NORMAL)
         else:
             self.submitButton.config(state=tk.DISABLED)
@@ -390,7 +393,8 @@ class UpgradePage(tk.Frame):
             self.upgrades = randomEffectLists.getRandomLandUpgrades()
         if type == "ArtifactEnchantment":
             self.upgrades = randomEffectLists.getRandomArtifactEnchantmentUpgrades()
-
+        if type == "Invalid":
+            self.upgrades = ['','','']
         self.updateUpgradeLabel()
 
     def updateUpgradeLabel(self):

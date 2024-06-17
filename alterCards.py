@@ -111,11 +111,29 @@ def combine(cardOne, cardTwo):
     return cardImage
 
 def upgrade(card, ability):
+    if os.path.exists('id_counter.txt'):
+        with open('id_counter.txt', 'r') as file:
+            id = int(file.read().strip())
+    else:
+            id = 1
+
     if card['mainCard'][3]:
         card["faces"][0][11] = f"{ability} \n {card["faces"][0][11]}"
+        card = createUpgradeCardObject(card, ability, id)
+
+        if card['mainCard'][1] == "adventure":
+            cardImage = createCardImage(card["faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=card["faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
+
     else:
-        card['mainCard'][11] = f"{ability} \n {card['mainCard'][11]}"
+        #card['mainCard'][11] = f"{ability} \n {card['mainCard'][11]}"
+        card = createUpgradeCardObject(card, ability, id)
         cardImage = createCardImage(card, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
+
+    id += 1
+    with open('id_counter.txt', 'w') as file:
+            file.write(str(id))
+
+    return cardImage
 #TODO finish upgrade
 
     
@@ -253,6 +271,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         box = Image.open("ManaSymbols/clpt.png").resize((81, 42))
         frame.paste(box, (274, 466), box)
         draw.text((316, 483), f"{card['power']}/{card['toughness']}", font=titleFont, fill="black", align="center", anchor="mm")
+    
     if ("Saga" in framePath):
         chapters = card["oracle_text"].split("\n")[1:]
         for index, chapter in enumerate(chapters):
@@ -269,6 +288,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
             draw.text(planeswalkerStartingLoyaltyCoord, card["loyalty"], font=typeFont, fill="white", anchor="mm", align="center")
     else:
         itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
+
     if flipsideTitleCoords and backCard:
         if "Back" in framePath:
             draw.text(flipsideTitleCoords, getMainType(backCard["type_line"]), font=flipsideTitleFont, fill="black")
@@ -308,6 +328,63 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         print("Saving")
         frame.save(f"images/{card["name"]}.png")
         return [frame]
+
+def createUpgradeCardObject(card, upgrade, id):
+    if card['mainCard'][3]:
+        newName = f"No. {id} - A"
+        newNameTwo = f"No. {id} - B"
+        oracle = f"{upgrade}\n{card['faces'][0][11]}"
+        return {
+            "oracle_id": id,
+            "set_type": "Rogue",
+            "layout": "Rogue",
+            "set_name": "Rogue",
+            "name": f"No. {id}",
+            "mana_cost": card['mainCard'][9],
+            "cmc": card['mainCard'][4],
+            "type_line": card['mainCard'][14],
+            "colors": "",
+            "card_faces": [
+                {
+                    "object": "card_face",
+                    "name": newName,
+                    "mana_cost": card['faces'][0][6],
+                    "type_line": card['faces'][0][10],
+                    "oracle_text": oracle.replace(card['faces'][0][7], newName),
+                    "power": card['faces'][0][8],
+                    "toughness": card['faces'][0][9],
+                    "id": id,
+                    "loyalty": card['faces'][0][5]
+                },
+                {
+                    "object": "card_face",
+                    "name": newNameTwo,
+                    "mana_cost": card['faces'][1][6],
+                    "type_line": card['faces'][1][10],
+                    "oracle_text": card['faces'][1][11].replace(card['faces'][1][7], newNameTwo),
+                    "power": card['faces'][1][8],
+                    "toughness": card['faces'][1][9],
+                    "id": id,
+                    "loyalty": card['faces'][1][5]
+                }
+            ]
+        }
+    else:
+        newName = f"No. {id}"
+        oracle = f"{upgrade}\n{card['mainCard'][11]}"
+        return {
+                "oracle_id": id,
+                "set_type": "Rogue",
+                "layout": "Rogue",
+                "set_name": "Rogue",
+                "name": newName,
+                "mana_cost": card['mainCard'][9],
+                "cmc": card['mainCard'][4],
+                "type_line": card['mainCard'][14],
+                "oracle_text": oracle.replace(card['mainCard'][10], newName).replace("equal to mana cost", card['mainCard'][9]),
+                "power": card['mainCard'][12],
+                "toughness": card['mainCard'][13]
+            }
 
 def createSingleFaceCardObject(cardOne, cardTwo, id):
     newName = f"No. {id}"

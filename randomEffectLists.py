@@ -61,9 +61,9 @@ companions = [
 ]
 
 creatureUpgrades = [
-    "This creature gets +1/+0",
-    "This creature gets +0/+1",
-    "This creature costs {1} less to cast",
+    "This creature gets +1/+0.",
+    "This creature gets +0/+1.",
+    "This creature costs {1} less to cast.",
     "Trample",
     "Vigilance",
     "Lifelink",
@@ -71,10 +71,10 @@ creatureUpgrades = [
     "Dredge 1",
     "Cycling {1}",
     "Delve",
-    "Whenever you lose life put a +1/+1 counter on this creature",
+    "Whenever you lose life put a +1/+1 counter on this creature.",
     "Amass 1",
-    "When this creature enters the battlefield, create a food token",
-    "When this creature dies, create a treasure token",
+    "When this creature enters the battlefield, create a food token.",
+    "When this creature dies, create a treasure token.",
     "Haste",
     "Menace",
     "Fabricate 1",
