@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk  # Ensure you have the Pillow library installed
 import databaseAccessor
-import combine  # Ensure you have combine.py in your project
+import alterCards  # Ensure you have combine.py in your project
 import fetchAndPopulateDB
 import randomEffectLists
 
@@ -34,11 +34,15 @@ class App(tk.Tk):
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
+        self.input_text.set("")
+        self.input_text2.set("")
+        self.card1 = None
+        self.card2 = None
         frame.tkraise()
         frame.event_generate("<<ShowFrame>>")
+        
     
     def configure_grid(self, frame):
-        '''Configure the grid layout for a given frame'''
         frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=3)
         frame.columnconfigure(2, weight=3)
@@ -133,6 +137,7 @@ class ClonePage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         controller.configure_grid(self)
+        self.bind("<<ShowFrame>>", self.onShow)
         
         label = tk.Label(self, text="Clone Card")
         label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
@@ -162,6 +167,9 @@ class ClonePage(tk.Frame):
                            command=lambda: self.printCard())
         self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
     
+    def onShow(self, event):
+        self.display_label1.config(text="")
+        
     def takePicture():
         print()
 
@@ -197,6 +205,8 @@ class CombinePage(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         controller.configure_grid(self)
+        self.bind("<<ShowFrame>>", self.onShow)
+
 
         label = tk.Label(self, text="Combine Cards")
         label.grid(row=0, column=2, columnspan=3, pady=10, padx=10)
@@ -243,7 +253,12 @@ class CombinePage(tk.Frame):
                            command=lambda: self.combine_cards())
         self.submitButton.grid(row=5, column=3, pady=10, padx=10, sticky="nsew")
 
+    def onShow(self, event):
+        self.display_label1.config(text="")
+        self.display_label2.config(text="")
+
     def takePicture():
+        #TODO
         print()
 
     def getCard(self, cardName):
@@ -278,7 +293,7 @@ class CombinePage(tk.Frame):
     def combine_cards(self):
         card1 = self.controller.card1
         card2 = self.controller.card2
-        cardImages = combine.combine(card1, card2)
+        cardImages = alterCards.combine(card1, card2)
         #TODO replace .save with print method
         cardImages[0].save(f"1.png")
         if len(cardImages) == 2:
@@ -286,6 +301,7 @@ class CombinePage(tk.Frame):
 
         print("Cards combined")
 
+#TODO upgrade page
 class UpgradePage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
