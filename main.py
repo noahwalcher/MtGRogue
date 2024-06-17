@@ -396,6 +396,8 @@ class CompanionPage(tk.Frame):
             self.companions = randomEffectLists.getRandomCompanion()
         else:
             self.companions = ['','','']
+            self.display_label1.config(text="Card not a valid companion", fg="red")
+            self.controller.card1 = None
         self.updateCompanionLabel()
 
     def updateCompanionLabel(self):

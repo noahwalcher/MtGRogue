@@ -121,7 +121,7 @@ def upgrade(card, ability):
     
     cardObject = createUpgradeCardObject(card, ability, id)
 
-    if cardObject['card_faces']:
+    if 'card_faces' in cardObject:
         print("in faces")
         if card['mainCard'][1] == "adventure":
             cardImage = createCardImage(cardObject["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=cardObject["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
