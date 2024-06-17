@@ -3,7 +3,7 @@ from PIL import Image, ImageTk  # Ensure you have the Pillow library installed
 import databaseAccessor
 import combine  # Ensure you have combine.py in your project
 import fetchAndPopulateDB
-import ringcrafterLists
+import randomEffectLists
 
 class App(tk.Tk):
     def __init__(self):
@@ -20,7 +20,7 @@ class App(tk.Tk):
 
         # Initialize frames
         self.frames = {}
-        for F in (HomePage, CombinePage, ClonePage, ComputerPage, RingPage):
+        for F in (HomePage, CombinePage, ClonePage, ComputerPage, RingPage, UpgradePage):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
@@ -33,9 +33,9 @@ class App(tk.Tk):
         self.show_frame("HomePage")
 
     def show_frame(self, page_name):
-        '''Show a frame for the given page name'''
         frame = self.frames[page_name]
         frame.tkraise()
+        frame.event_generate("<<ShowFrame>>")
     
     def configure_grid(self, frame):
         '''Configure the grid layout for a given frame'''
@@ -286,16 +286,25 @@ class CombinePage(tk.Frame):
 
         print("Cards combined")
 
+class UpgradePage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        controller.configure_grid(self)
+        self.upgrades = []
+        self.currentUpgradeIndex = 0
+
 class RingPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
         controller.configure_grid(self)
-        self.triggers = ringcrafterLists.getRandomTriggers()
-        self.effects = ringcrafterLists.getRandomEffects()
+        self.bind("<<ShowFrame>>", self.onShow)
+
+        self.triggers = randomEffectLists.getRandomTriggers()
+        self.effects = randomEffectLists.getRandomEffects()
         self.currentTriggerIndex = 0
         self.currentEffectIndex = 0
-
         homeButton = tk.Button(self, text="Back",
                            command=lambda: controller.show_frame("HomePage"))
         homeButton.grid(row=0, column=6, pady=10, padx=10, sticky="nsew")
@@ -323,6 +332,14 @@ class RingPage(tk.Frame):
 
         self.craftButton = tk.Button(self, text='Craft', command=self.craft)
         self.craftButton.grid(row=3, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+
+    def onShow(self, event):
+        self.triggers = randomEffectLists.getRandomTriggers()
+        self.effects = randomEffectLists.getRandomEffects()
+        self.currentTriggerIndex = 0
+        self.currentEffectIndex = 0
+        self.updateEffectLabel()
+        self.updateTriggerLabel()
 
     def updateTriggerLabel(self):
         self.triggerLabel.config(text=self.triggers[self.currentTriggerIndex])

@@ -1,3 +1,53 @@
+import random
+
+def getRandomTriggers():
+    return random.sample(triggers, k=3)
+
+def getRandomEffects():
+    return random.sample(effects, k=3)
+
+def getRandomCompanion():
+    return random.sample(companions, k=3)
+
+def getRandomCreatureUpgrades():
+    return random.sample(creatureUpgrades, k=3)
+
+def getRandomArtifactEnchantmentUpgrades():
+    return random.sample(artifactEnchantmentUpgrades, k=3)
+
+def getRandomSpellUpgrades():
+    return random.sample(spellUpgrades, k=3)
+
+def getRandomLandUpgrades():
+    return random.sample(landUpgrades, k=3)
+
+triggers = [
+    "Whenever an artifact enters the battlefield under your control",
+    "Whenever you discard a card",
+    "Whenever one or more cards leave your graveyard",
+    "Whenever a zombie enters the battlefield under your control",
+    "Whenever you sacrifice a creature",
+    "Whenever you gain life",
+    "Whenever you lose life",
+    "At the beginning of your upkeep, if you have no cards in hand",
+    "Whenever you cast your second spell each turn",
+    "At the beginning of your upkeep, if you have delirium"
+]
+
+effects = [
+    "gain 1 life",
+    "lose 1 life",
+    "surveil 1",
+    "amass 1",
+    "discard a card, then draw a card",
+    "add 1 to your mana pool",
+    "gain 1 gold",
+    "increase the number needed to roll a rare card by 1",
+    "target creature gets +1/+1 until end of turn",
+    "deal 1 damage to any target",
+    "target card in your hand gains delve until end of turn"
+]
+
 companions = [
     "Companion — You have discarded a card this turn",
     "Companion — You control an artifact",
@@ -29,7 +79,37 @@ creatureUpgrades = [
     "Menace",
     "Fabricate 1",
     "Extort",
-    "Whenever this creature deals combat damage to an opponent, gain 1 gold."
+    "Whenever this creature deals combat damage to an opponent, gain 1 gold.",
+    "Flash",
+    "Exploit (When this creature enters the battlefield, you may sacrifice a creature.)",
+    "{T}: Add {1}",
+    "Changeling (This card is every creature type.)"
+]
+
+artifactEnchantmentUpgrades = [
+    "Dredge 1",
+    "Delve",
+    "Cycling {1}",
+    "This card costs {1} less to cast",
+    "Creatures your opponents control enter the battlefield tapped.",
+    "Delirium — At the beginning of your upkeep mill a card",
+    "{T}: Add {1}",
+    "Extort",
+    "Zombies get +1/+0.",
+    "{3}, Sacrifice this card: Return target card from your graveyard to your hand.",
+    "Whenever you cast your second spell in a turn, gain 1 life.",
+    "Play with the top card of your library revealed.",
+    "You have no maximum hand size.",
+    "{3}, Sacrifice this card: Search your library for a basic land and put it onto the battlefield.",
+    "{2}, Sacrifice a creature: This card deals 1 damage to any target.",
+    "When this card enters the battlefield, untap target permanent.",
+    "At the beginning of your upkeep choose one: each player gains 1 life or each player loses 1 life.",
+    "Sacrifice this card: Draw a card.",
+    "Indestructible",
+    "Whenever one or more cards leave your graveyard, gain 1 gold.",
+    "When this card enters the battlefield, Surveil 1.",
+    "{T}, Pay 1 life: Put target card from your graveyard on the bottom of your library.",
+    "When this card leaves the battlefield, draw a card."
 ]
 
 landUpgrades = [
@@ -78,5 +158,4 @@ spellUpgrades = [
     "Deal 1 damage to any target.",
     "You may exchange 1 item for a random item.",
     "Overload {5} (You may cast this spell for its overload cost. If you do, change “target” in its text to “each.”)"
-
 ]
