@@ -55,26 +55,30 @@ planeswalkerManaCoord = (347, 23, 17, 17)
 flipsideTitleCoord = (27, 473)
 
 def printCard(frame):
-    grayFrame = frame.convert('L')
-    maxWidth = 384
-    aspectRatio = grayFrame.width / grayFrame.height
-    newHeight = int(maxWidth / aspectRatio)
-    resizedFrame = grayFrame.resize((maxWidth, newHeight), Image.ANTIALIAS)
+    # grayFrame = frame.convert('L')
+    # maxWidth = 384
+    # aspectRatio = grayFrame.width / grayFrame.height
+    # newHeight = int(maxWidth / aspectRatio)
+    # resizedFrame = grayFrame.resize((maxWidth, newHeight), Image.LANCZOS)
 
-    threshold = 128
-    frameBW = resizedFrame.point(lambda p: p < threshold and 255)
+    # threshold = 128
+    # frameBW = resizedFrame.point(lambda p: p < threshold and 255)
 
-    imageBytes = bytearray()
-    pixels = frameBW.load()
-    for y in range(frameBW.height):
-        for x in range(0, frameBW.width, 8):
-            byte = 0
-            for bit in range(8):
-                if x + bit < frameBW.width and pixels[x + bit, y] == 0:
-                    byte |= (1 << (7 - bit))
-            imageBytes.append(byte)
-
-    p.write(imageBytes)
+    # imageBytes = bytearray()
+    # pixels = frameBW.load()
+    # for y in range(frameBW.height):
+    #     for x in range(0, frameBW.width, 8):
+    #         byte = 0
+    #         for bit in range(8):
+    #             if x + bit < frameBW.width and pixels[x + bit, y] == 0:
+    #                 byte |= (1 << (7 - bit))
+    #         imageBytes.append(byte)
+    frame.convert('L')
+    frame = frame.resize((384, int((384 / frame.width) * frame.height)), Image.LANCZOS)
+    frame = frame.convert('1', dither=Image.NONE)
+    frame.save("1.bmp")
+    
+    p.image("1.bmp")
     p.textln("")
     p.textln("")
     p.textln("")
