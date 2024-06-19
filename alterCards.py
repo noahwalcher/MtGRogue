@@ -193,7 +193,7 @@ def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, boundin
                 textWidth = text_bbox[2] - text_bbox[0]
                 if word.startswith("{") and word.endswith("}"):
                     innerSymbol = word[1:-1].lower().replace("/", "")
-                    symbol = Image.open(f"ManaSymbols/{innerSymbol}.png").resize((fontSize, fontSize))
+                    symbol = Image.open(f"ManaSymbols/{innerSymbol.lower()}.png").resize((fontSize, fontSize))
                     frame.paste(symbol, (current_x, current_y), symbol)
                     textWidth = fontSize
                     print(f"THIS IS OUR WORD ---> {word}")
@@ -230,7 +230,7 @@ def drawManaCost(frame, mana_cost, position):
     blackCircle = Image.open("ManaSymbols/black_circle.png").resize(mana_symbol_size)
     for symbol in mana_symbols:
         # Load the mana symbol image
-        mana_image_path = f"{mana_symbol_path}{symbol}.png"
+        mana_image_path = f"{mana_symbol_path}{symbol.lower()}.png"
         mana_image = Image.open(mana_image_path).resize(mana_symbol_size)
 
         # Paste the mana symbol image onto the card
@@ -282,10 +282,10 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
             loyaltyModifier = ability.split(":")[0]
             draw_text_within_bounding_box(frame, draw, ability, "Fonts/mplantin.ttf", 14, textCoord[index])
             draw.text(planeswalker3AbilityModifierCoords[index], loyaltyModifier, font=typeFont, fill="white", anchor="mm", align="center")
-            print(f"Starting loyalty here ----:> {card["loyalty"]}")
+            print(f"Starting loyalty here ----:> {card['loyalty']}")
             draw.text(planeswalkerStartingLoyaltyCoord, card["loyalty"], font=typeFont, fill="white", anchor="mm", align="center")
     else:
-        itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 14, textCoord)
+        itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 16, textCoord)
 
     if flipsideTitleCoords and backCard:
         if "Back" in framePath:
@@ -324,7 +324,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         return createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
     else:
         print("Saving")
-        frame.save(f"images/{card["name"]}.png")
+        frame.save(f"images/{card['name']}.png")
         return [frame]
 
 def createUpgradeCardObject(card, upgrade, id):

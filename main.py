@@ -183,9 +183,9 @@ class ClonePage(tk.Frame):
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card1 = card
-            image_path = f'images/{card["mainCard"][0]}.jpg'
+            image_path = f"images/{card['mainCard'][0]}.jpg"
             self.submitButton.config(state=tk.NORMAL)
 
         else:
@@ -267,7 +267,7 @@ class CombinePage(tk.Frame):
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card1 = card
         else:
             self.display_label1.config(text=f"{cardName} not found", fg="red")
@@ -278,7 +278,7 @@ class CombinePage(tk.Frame):
     def getCard2(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            self.display_label2.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.display_label2.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card2 = card
         else:
             self.display_label2.config(text=f"{cardName} not found", fg="red")
@@ -368,7 +368,7 @@ class CompanionPage(tk.Frame):
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card1 = card
             self.getCompanionType()
             self.updateSubmitButtonState()
@@ -470,7 +470,7 @@ class UpgradePage(tk.Frame):
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
-            self.display_label1.config(text=f"{card["mainCard"][10]}", fg="green")
+            self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card1 = card
             self.getUpgradeType()
             self.updateSubmitButtonState()
