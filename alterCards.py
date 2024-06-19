@@ -4,8 +4,9 @@ import re
 import sqlite3
 from PIL import Image, ImageDraw, ImageFont
 import fetchAndPopulateDB
+from escpos.printer import Serial
 
-
+p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
 
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
 typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
@@ -52,6 +53,33 @@ aftermathManaCoord = (476, 34, 17, 18)
 planeswalkerManaCoord = (347, 23, 17, 17)
 
 flipsideTitleCoord = (27, 473)
+
+def printCard(frame):
+    grayFrame = frame.convert('L')
+    maxWidth = 384
+    aspectRatio = grayFrame.width / grayFrame.height
+    newHeight = int(maxWidth / aspectRatio)
+    resizedFrame = grayFrame.resize((maxWidth, newHeight), Image.ANTIALIAS)
+
+    threshold = 128
+    frameBW = resizedFrame.point(lambda p: p < threshold and 255)
+
+    imageBytes = bytearray()
+    pixels = frameBW.load()
+    for y in range(frameBW.height):
+        for x in range(0, frameBW.width, 8):
+            byte = 0
+            for bit in range(8):
+                if x + bit < frameBW.width and pixels[x + bit, y] == 0:
+                    byte |= (1 << (7 - bit))
+            imageBytes.append(byte)
+
+    p.write(imageBytes)
+    p.textln("")
+    p.textln("")
+    p.textln("")
+
+    p.close()
 
 def combine(cardOne, cardTwo):
     if os.path.exists('id_counter.txt'):
@@ -325,6 +353,7 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
     else:
         print("Saving")
         frame.save(f"images/{card['name']}.png")
+        printCard(frame)
         return [frame]
 
 def createUpgradeCardObject(card, upgrade, id):
