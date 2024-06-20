@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 import fetchAndPopulateDB
 from escpos.printer import Serial
 
-p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
 
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
 typeFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=16)
@@ -55,33 +54,18 @@ planeswalkerManaCoord = (347, 23, 17, 17)
 flipsideTitleCoord = (27, 473)
 
 def printCard(frame):
-    # grayFrame = frame.convert('L')
-    # maxWidth = 384
-    # aspectRatio = grayFrame.width / grayFrame.height
-    # newHeight = int(maxWidth / aspectRatio)
-    # resizedFrame = grayFrame.resize((maxWidth, newHeight), Image.LANCZOS)
-
-    # threshold = 128
-    # frameBW = resizedFrame.point(lambda p: p < threshold and 255)
-
-    # imageBytes = bytearray()
-    # pixels = frameBW.load()
-    # for y in range(frameBW.height):
-    #     for x in range(0, frameBW.width, 8):
-    #         byte = 0
-    #         for bit in range(8):
-    #             if x + bit < frameBW.width and pixels[x + bit, y] == 0:
-    #                 byte |= (1 << (7 - bit))
-    #         imageBytes.append(byte)
+    p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
+    width, height = frame.size
+    frame = frame.crop((15, 0, width - 15, height))
     frame.convert('L')
     frame = frame.resize((384, int((384 / frame.width) * frame.height)), Image.LANCZOS)
     frame = frame.convert('1', dither=Image.NONE)
     frame.save("1.bmp")
     
-    p.image("1.bmp")
-    p.textln("")
-    p.textln("")
-    p.textln("")
+    p.image("1.bmp", impl="bitImageColumn")
+    p.textln(" ")
+    p.textln(" ")
+    p.textln(" ")
 
     p.close()
 
@@ -154,7 +138,6 @@ def upgrade(card, ability):
     cardObject = createUpgradeCardObject(card, ability, id)
 
     if 'card_faces' in cardObject:
-        print("in faces")
         if card['mainCard'][1] == "adventure":
             cardImage = createCardImage(cardObject["card_faces"][0], "Frames/Adventure.png", standardTitleCoord, standardTypeCoord, adventureBodyCoord1, standardManaCoord, card2=cardObject["card_faces"][1], title2Coord=adventureTitleCoord, type2Coord=adventureTypeCoord, text2Coord=adventureBodyCoord2, manaCoord2=adventureManaCoord)
     else:
@@ -228,7 +211,6 @@ def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, boundin
                     symbol = Image.open(f"ManaSymbols/{innerSymbol.lower()}.png").resize((fontSize, fontSize))
                     frame.paste(symbol, (current_x, current_y), symbol)
                     textWidth = fontSize
-                    print(f"THIS IS OUR WORD ---> {word}")
                 else:        
                     draw.text((current_x, current_y), word, font=font, fill="black")
                 current_x += textWidth + space_width
@@ -245,7 +227,6 @@ def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, boundin
 def drawManaCost(frame, mana_cost, position):
     # Define the path to mana symbols
     mana_symbol_path = "ManaSymbols/"
-    print(f"Here's the mana coord -> {position}")
     
     mana_cost = mana_cost.replace("/", "")
     # Regular expression to find mana symbols
@@ -314,7 +295,6 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
             loyaltyModifier = ability.split(":")[0]
             draw_text_within_bounding_box(frame, draw, ability, "Fonts/mplantin.ttf", 14, textCoord[index])
             draw.text(planeswalker3AbilityModifierCoords[index], loyaltyModifier, font=typeFont, fill="white", anchor="mm", align="center")
-            print(f"Starting loyalty here ----:> {card['loyalty']}")
             draw.text(planeswalkerStartingLoyaltyCoord, card["loyalty"], font=typeFont, fill="white", anchor="mm", align="center")
     else:
         itFits = draw_text_within_bounding_box(frame, draw, card["oracle_text"], "Fonts/mplantin.ttf", 16, textCoord)
