@@ -49,15 +49,16 @@ effects = [
 ]
 
 companions = [
-    "Companion — You have discarded a card this turn",
-    "Companion — You control an artifact",
-    "Companion — You control a zombie",
+    "Companion — You have discarded a card this turn.",
+    "Companion — You control an artifact.",
+    "Companion — You control a zombie.",
     "Companion — Delirium",
     "Companion — Hellbent",
-    "Companion — You have sacrificed a creature this turn",
-    "Companion — You have gained life this turn",
-    "Companion — You have lost life this turn",
-    "Companion — A card has left your graveyard this turn",
+    "Companion — You have sacrificed a creature this turn.",
+    "Companion — You have gained life this turn.",
+    "Companion — You have lost life this turn.",
+    "Companion — A card has left your graveyard this turn.",
+    "Companion — Your starting deck contains at least 10 cards more than the minimum."
 ]
 
 creatureUpgrades = [
