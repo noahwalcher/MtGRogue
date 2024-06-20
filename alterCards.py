@@ -217,7 +217,7 @@ def draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize, boundin
             current_y += getLineHeight[3] -  getLineHeight[1]
         return True
     else:
-        if fontSize > 10: #This is the minimum font size that can be adjusted
+        if fontSize > 11: #This is the minimum font size that can be adjusted
             print(f"Couldn't fit at {fontSize}. Reducing")
             return draw_text_within_bounding_box(frame, draw, text, fontPath, fontSize - 1, bounding_box)
         else:

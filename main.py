@@ -4,6 +4,7 @@ import databaseAccessor
 import alterCards  # Ensure you have combine.py in your project
 import fetchAndPopulateDB
 import randomEffectLists
+import subprocess
 
 class App(tk.Tk):
     def __init__(self):
@@ -57,6 +58,10 @@ class App(tk.Tk):
         frame.rowconfigure(4, weight=1)
         frame.rowconfigure(5, weight=1)
         frame.rowconfigure(6, weight=1)
+
+    def takePicture(self):
+        subprocess.run(["libcamera-still", "-o", "capture2.jpg", "-q", "100", "--lens-position", "0"])
+        print("captured image")
 
 
 class HomePage(tk.Frame):
@@ -174,8 +179,8 @@ class ClonePage(tk.Frame):
     def onShow(self, event):
         self.display_label1.config(text="")
         
-    def takePicture():
-        print()
+    def takePicture(self):
+        self.controller.takePicture()
 
     def printCard():
         print()
