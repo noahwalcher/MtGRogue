@@ -88,7 +88,8 @@ creatureUpgrades = [
     "First strike",
     "Double strike",
     "Flying",
-    "Hexproof"
+    "Hexproof",
+    "At the beginning of combat on your turn, if you've cast three or more instant and sorcery spells this turn, return this card from your graveyard to the battlefield."
 ]
 
 artifactEnchantmentUpgrades = [
