@@ -149,12 +149,13 @@ with open('mtg_rogue.txt', 'r') as file:
     custom_words = [line.strip().lower() for line in file]
 
 def main():
-    image = Image.open("testOCR.jpg")
+    image = Image.open("capture2.jpg")
     gray_image = ImageOps.grayscale(image)
 
     # Enhance contrast
     enhancer = ImageEnhance.Contrast(gray_image)
     enhanced_image = enhancer.enhance(2)
+    enhanced_image.save('capture3.jpg')
     custom_config = r'--psm 6 --oem 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-û " --user-words C:\\Users\\noahw\\devl\\MtGRogueMachine\\mtg_rogue.txt'
 
     # Apply thresholding
