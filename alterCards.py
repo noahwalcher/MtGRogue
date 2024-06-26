@@ -128,6 +128,11 @@ def combine(cardOne, cardTwo):
 
     return cardImage
 
+def craftRing(trigger, effect):
+    ability = f"{trigger}, {effect}."
+    cardObject = createRingCardObject(ability)
+    cardImage = createCardImage(cardObject, "Frames/Standard.png", standardTitleCoord, standardTypeCoord, standardBodyCoord, standardManaCoord)
+
 def upgrade(card, ability):
     if os.path.exists('id_counter.txt'):
         with open('id_counter.txt', 'r') as file:
@@ -339,6 +344,19 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
         frame.save(f"images/{card['name']}.png")
         printCard(frame)
         return [frame]
+
+def createRingCardObject(ability):
+    return {
+                "oracle_id": 0,
+                "set_type": "Rogue",
+                "layout": "Rogue",
+                "set_name": "Rogue",
+                "name": "Bespoke Ring",
+                "mana_cost": "",
+                "cmc": "",
+                "type_line": "Ring",
+                "oracle_text": ability
+            }
 
 def createUpgradeCardObject(card, upgrade, id):
     if card['mainCard'][3]:

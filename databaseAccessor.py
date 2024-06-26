@@ -6,6 +6,7 @@ import shutil
 from PIL import Image, ImageOps, ImageEnhance
 import pytesseract
 from fuzzywuzzy import process
+import cv2
 
 
 def connect_db(db_name='mtg_cards.db'):
@@ -104,6 +105,7 @@ def download_card_images(card_names):
 
                     image_name = f"{oracle_id}.jpg"
                     image_path = os.path.join(image_folder, image_name)
+                    createTitleTrainingData(oracle_id, main_card[10])
 
                     # Check if image already exists
                     if os.path.exists(image_path):
@@ -145,22 +147,28 @@ def download_card_images(card_names):
     conn.close()
     return success  # Return the success status
 
+def createTitleTrainingData(oracleID, name):
+    print('here')
+    if os.path.exists(f"images/{oracleID}.jpg"):
+        image = Image.open(f"images/{oracleID}.jpg")
+        crop = image.crop((52,52,623,90))
+        crop.save(f"training/{oracleID}.png")
+        textFile = f"training/{oracleID}.gt.txt"
+        with open(textFile, 'w') as file:
+            file.write(f"{name}")
+        print()
+
 with open('mtg_rogue.txt', 'r') as file:
     custom_words = [line.strip().lower() for line in file]
 
 def main():
-    image = Image.open("capture2.jpg")
-    gray_image = ImageOps.grayscale(image)
+    # download_card_images(custom_words)
+    # return
+    image = Image.open('test1.jpg')
 
-    # Enhance contrast
-    enhancer = ImageEnhance.Contrast(gray_image)
-    enhanced_image = enhancer.enhance(2)
-    enhanced_image.save('capture3.jpg')
-    custom_config = r'--psm 6 --oem 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-û " --user-words C:\\Users\\noahw\\devl\\MtGRogueMachine\\mtg_rogue.txt'
-
-    # Apply thresholding
-    binary_image = enhanced_image.point(lambda x: 0 if x < 140 else 255, '1')
-    text = pytesseract.image_to_string(binary_image, config=custom_config).strip().lower()
+    # Perform OCR
+    custom_config = r'--oem 3 --psm 6'
+    text = pytesseract.image_to_string(image, config=custom_config)
 
     best_match, score = process.extractOne(text, custom_words)
     print(f"best match -> {best_match.replace('ã»', 'û')}")

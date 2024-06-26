@@ -5,6 +5,9 @@ import alterCards  # Ensure you have combine.py in your project
 import fetchAndPopulateDB
 import randomEffectLists
 import subprocess
+import pytesseract
+from fuzzywuzzy import process
+from escpos.printer import Serial
 
 class App(tk.Tk):
     def __init__(self):
@@ -60,8 +63,37 @@ class App(tk.Tk):
         frame.rowconfigure(6, weight=1)
 
     def takePicture(self):
-        subprocess.run(["libcamera-still", "-o", "capture2.jpg", "-q", "100", "--lens-position", "0"])
+        subprocess.run(["libcamera-still", "-o", "capture.jpg", "-q", "100", "--lens-position", "0"])
         print("captured image")
+        with open('cardAndFacesNames.txt', 'r') as file:
+            custom_words = [line.strip().lower() for line in file]
+        image = Image.open('capture.jpg')
+
+        #TODO crop image
+        custom_config = r'--oem 3 --psm 6'
+        text = pytesseract.image_to_string(image, config=custom_config)
+
+        best_match, score = process.extractOne(text, custom_words)
+        print(f"best match -> {best_match.replace('ã»', 'û')}")
+        print(f"score here -> {score}")
+        print(f"Our text here!!--> {text}")
+        return best_match.replace('ã»', 'û')   
+    
+    def printCard(frame):
+            p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
+            width, height = frame.size
+            frame = frame.crop((15, 0, width - 15, height))
+            frame.convert('L')
+            frame = frame.resize((384, int((384 / frame.width) * frame.height)), Image.LANCZOS)
+            frame = frame.convert('1', dither=Image.NONE)
+            frame.save("1.bmp")
+            
+            p.image("1.bmp", impl="bitImageColumn")
+            p.textln(" ")
+            p.textln(" ")
+            p.textln(" ")
+
+            p.close()
 
 
 class HomePage(tk.Frame):
@@ -180,10 +212,11 @@ class ClonePage(tk.Frame):
         self.display_label1.config(text="")
         
     def takePicture(self):
-        self.controller.takePicture()
+        cardName = self.controller.takePicture()
+        self.getCard(cardName)
 
-    def printCard():
-        print()
+    def printCard(self):
+        self.controller.printCard(Image.open(f'{self.controller.card1['mainCard'][0]}.jpg'))
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
@@ -192,21 +225,10 @@ class ClonePage(tk.Frame):
             self.controller.card1 = card
             image_path = f"images/{card['mainCard'][0]}.jpg"
             self.submitButton.config(state=tk.NORMAL)
-
         else:
             self.display_label1.config(text=f"{cardName} not found", fg="red")
             self.controller.card1 = None
         print(card)
-
-    def display_card_image(self, image_path):
-        try:
-            image = Image.open(image_path)
-            image = image.resize((250, 350))  # Resize image as needed
-            self.card_image = ImageTk.PhotoImage(image)
-            self.image_label.config(image=self.card_image)
-        except Exception as e:
-            print(f"Error loading image: {e}")
-            self.image_label.config(image='') 
 
 class CombinePage(tk.Frame):
     def __init__(self, parent, controller):
@@ -265,9 +287,9 @@ class CombinePage(tk.Frame):
         self.display_label1.config(text="")
         self.display_label2.config(text="")
 
-    def takePicture():
-        #TODO
-        print()
+    def takePicture(self):
+        cardName = self.controller.takePicture()
+        self.getCard(cardName)
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
@@ -309,7 +331,6 @@ class CombinePage(tk.Frame):
             self.display_label2.config(text="This combination of cards is not possible.", fg="red")
             self.update_combine_button_state()
         else:
-            #TODO replace .save with print method
             cardImages[0].save(f"1.png")
             if len(cardImages) == 2:
                 cardImages[1].save(f"2.png")
@@ -391,9 +412,9 @@ class CompanionPage(tk.Frame):
         else:
             self.submitButton.config(state=tk.DISABLED)
 
-    def takePicture():
-        #TODO
-        print()
+    def takePicture(self):
+        cardName = self.controller.takePicture()
+        self.getCard(cardName)
 
     def getCompanionType(self):
         type = alterCards.getUpgradeType(self.controller.card1)
@@ -493,9 +514,9 @@ class UpgradePage(tk.Frame):
         else:
             self.submitButton.config(state=tk.DISABLED)
 
-    def takePicture():
-        #TODO
-        print()
+    def takePicture(self):
+        cardName = self.controller.takePicture()
+        self.getCard(cardName)
 
     def getUpgradeType(self):
         type = alterCards.getUpgradeType(self.controller.card1)
@@ -593,7 +614,7 @@ class RingPage(tk.Frame):
         self.updateEffectLabel()
 
     def craft(self):
-        print()#TODO print out crafted ring
+        alterCards.craftRing(self.triggers[self.currentTriggerIndex], self.effects[self.currentEffectIndex])
 
 if __name__ == "__main__":
     app = App()
