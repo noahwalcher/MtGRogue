@@ -216,7 +216,7 @@ class ClonePage(tk.Frame):
         self.getCard(cardName)
 
     def printCard(self):
-        self.controller.printCard(Image.open(f'{self.controller.card1['mainCard'][0]}.jpg'))
+        self.controller.printCard(Image.open(f'{self.controller.card1["mainCard"][0]}.jpg'))
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)

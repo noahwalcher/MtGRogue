@@ -6,8 +6,6 @@ import shutil
 from PIL import Image, ImageOps, ImageEnhance
 import pytesseract
 from fuzzywuzzy import process
-import cv2
-
 
 def connect_db(db_name='mtg_cards.db'):
     return sqlite3.connect(db_name)
