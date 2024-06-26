@@ -162,7 +162,12 @@ with open('mtg_rogue.txt', 'r') as file:
 def main():
     # download_card_images(custom_words)
     # return
-    image = Image.open('test1.jpg')
+    image = Image.open('capture.jpg')
+    image = image.rotate(-1, expand=True)
+    image = image.crop((1466, 165, 1612, 1959))
+    image = image.rotate(90, expand=True)
+    image = image.convert('L')
+    image = image.point(lambda p: p > 150 and 255)
 
     # Perform OCR
     custom_config = r'--oem 3 --psm 6'

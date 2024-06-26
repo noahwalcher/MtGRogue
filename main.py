@@ -68,8 +68,12 @@ class App(tk.Tk):
         with open('cardAndFacesNames.txt', 'r') as file:
             custom_words = [line.strip().lower() for line in file]
         image = Image.open('capture.jpg')
+        image = image.rotate(-1, expand=True)
+        image = image.crop((1466, 165, 1612, 1959))
+        image = image.rotate(90, expand=True)
+        image = image.convert('L')
+        image = image.point(lambda p: p > 150 and 255)
 
-        #TODO crop image
         custom_config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(image, config=custom_config)
 
