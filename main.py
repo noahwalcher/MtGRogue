@@ -83,7 +83,7 @@ class App(tk.Tk):
         print(f"Our text here!!--> {text}")
         return best_match.replace('ã»', 'û')   
     
-    def printCard(frame):
+    def printCard(self, frame):
             p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
             width, height = frame.size
             frame = frame.crop((15, 0, width - 15, height))
@@ -220,7 +220,8 @@ class ClonePage(tk.Frame):
         self.getCard(cardName)
 
     def printCard(self):
-        self.controller.printCard(Image.open(f'{self.controller.card1["mainCard"][0]}.jpg'))
+        print(f'Our code now!!!!!!! - > {self.controller.card1["mainCard"][0]}.jpg')
+        self.controller.printCard(Image.open(f'images/{self.controller.card1["mainCard"][0]}.jpg'))
 
     def getCard(self, cardName):
         card = databaseAccessor.fetch_card_by_name(cardName)
