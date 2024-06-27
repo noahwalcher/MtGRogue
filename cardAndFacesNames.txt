@@ -152,4 +152,22 @@ Witch's Oven
 Woe Strider 
 Yawgmoth's Will 
 Yawgmoth, Thran Physician 
-Zulaport Cutthroat 
+Zulaport Cutthroat
+Cabal Evangel
+Graf Harvest
+Gravedigger
+Highborn Vampire
+Ichor Slick
+Injector Crocodile
+Lazotep Reaver
+Mire Triton
+Murder
+Phyrexian Ghoul
+Pointed Discussion
+Powerstone Fracture
+Shambling Ghast
+Swamp
+Ulcerate
+Undead Gladiator
+Walking Corpse
+
