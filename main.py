@@ -13,7 +13,10 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Multi-Screen Application with Text Input")
-        self.geometry("800x480")
+        #self.geometry("800x480")
+        self.attributes('-fullscreen', True)  # Start in fullscreen mode
+        self.configure(background='black')  # Set background color if needed
+        self.bind('<Escape>', self.toggle_fullscreen)
 
         self.card1 = None
         self.card2 = None
@@ -590,8 +593,9 @@ class RingPage(tk.Frame):
         pageLabel = tk.Label(self, text="Ringcrafter")
         pageLabel.grid(row=0, column=3, pady=10, padx=10, sticky="nsew")
 
-        self.triggerLabel = tk.Label(self, text=self.triggers[self.currentTriggerIndex], font=('Arial', 16))
+        self.triggerLabel = tk.Text(self, wrap='word', font=('Arial', 16), height=2, width=20)
         self.triggerLabel.grid(row=1, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+        self.triggerLabel.config(state=tk.DISABLED)
 
         self.prev_button = tk.Button(self, text='←', command=self.prevTrigger)
         self.prev_button.grid(row=1, column=1, pady=10, padx=10, sticky="nsew")
@@ -599,8 +603,9 @@ class RingPage(tk.Frame):
         self.next_button = tk.Button(self, text='→', command=self.nextTrigger)
         self.next_button.grid(row=1, column=5, pady=10, padx=10, sticky="nsew")
 
-        self.effectLabel = tk.Label(self, text=self.effects[self.currentEffectIndex], font=('Arial', 16))
+        self.effectLabel = tk.Text(self, wrap='word', font=('Arial', 16), height=2, width=20)
         self.effectLabel.grid(row=2, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+        self.effectLabel.config(state=tk.DISABLED)
 
         self.prevEffectButton = tk.Button(self, text='←', command=self.prevEffect)
         self.prevEffectButton.grid(row=2, column=1, pady=10, padx=10, sticky="nsew")
@@ -620,7 +625,10 @@ class RingPage(tk.Frame):
         self.updateTriggerLabel()
 
     def updateTriggerLabel(self):
-        self.triggerLabel.config(text=self.triggers[self.currentTriggerIndex])
+        self.triggerLabel.config(state=tk.NORMAL)  # Enable editing
+        self.triggerLabel.delete('1.0', tk.END)  # Clear existing text
+        self.triggerLabel.insert(tk.END, self.triggers[self.currentTriggerIndex])  # Insert new text
+        self.triggerLabel.config(state=tk.DISABLED)  # Disable editing to make it read-only
 
     def prevTrigger(self):
         self.currentTriggerIndex = (self.currentTriggerIndex - 1) % len(self.triggers)
@@ -631,7 +639,10 @@ class RingPage(tk.Frame):
         self.updateTriggerLabel()
 
     def updateEffectLabel(self):
-        self.effectLabel.config(text=self.effects[self.currentEffectIndex])
+        self.effectLabel.config(state=tk.NORMAL)  # Enable editing
+        self.effectLabel.delete('1.0', tk.END)  # Clear existing text
+        self.effectLabel.insert(tk.END, self.effects[self.currentEffectIndex])  # Insert new text
+        self.effectLabel.config(state=tk.DISABLED)  # Disable editing to make it read-only
 
     def prevEffect(self):
         self.currentEffectIndex = (self.currentEffectIndex - 1) % len(self.effects)
