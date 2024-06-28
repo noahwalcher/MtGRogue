@@ -54,20 +54,33 @@ planeswalkerManaCoord = (347, 23, 17, 17)
 flipsideTitleCoord = (27, 473)
 
 def printCard(frame):
-    p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
-    width, height = frame.size
-    frame = frame.crop((15, 0, width - 15, height))
-    frame.convert('L')
-    frame = frame.resize((384, int((384 / frame.width) * frame.height)), Image.LANCZOS)
-    frame = frame.convert('1', dither=Image.NONE)
-    frame.save("1.bmp")
-    
-    p.image("1.bmp", impl="bitImageColumn")
-    p.textln(" ")
-    p.textln(" ")
-    p.textln(" ")
+    try:
+        p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.00, dsrdtr=True)
+        
+        # Flush any existing data in the serial buffer
+        p.flush()
 
-    p.close()
+        width, height = frame.size
+        frame = frame.crop((15, 0, width - 15, height))
+        frame.convert('L')
+        frame = frame.resize((384, int((384 / frame.width) * frame.height)), Image.LANCZOS)
+        frame = frame.convert('1', dither=Image.NONE)
+        frame.save("1.bmp")
+
+        # Try sending the image and capture any errors
+        try:
+            p.image("1.bmp", impl="bitImageColumn")
+            p.textln(" ")
+            p.textln(" ")
+            p.textln(" ")
+        except Exception as e:
+            print(f"Error printing image: {e}")
+
+        p.flush()
+        p.close()
+
+    except Exception as e:
+        print(f"Error initializing printer: {e}")
 
 def combine(cardOne, cardTwo):
     if os.path.exists('id_counter.txt'):
