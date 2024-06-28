@@ -103,7 +103,7 @@ def download_card_images(card_names):
 
                     image_name = f"{oracle_id}.jpg"
                     image_path = os.path.join(image_folder, image_name)
-                    createTitleTrainingData(oracle_id, main_card[10])
+                    #createTitleTrainingData(oracle_id, main_card[10])
 
                     # Check if image already exists
                     if os.path.exists(image_path):

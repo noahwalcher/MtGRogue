@@ -65,8 +65,7 @@ class App(tk.Tk):
     def takePicture(self):
         subprocess.run(["libcamera-still", "-o", "capture.jpg", "-q", "100", "--lens-position", "0"])
         print("captured image")
-        with open('cardAndFacesNames.txt', 'r') as file:
-            custom_words = [line.strip().lower() for line in file]
+        
         image = Image.open('capture.jpg')
         image = image.rotate(-1, expand=True)
         image = image.crop((1466, 165, 1612, 1959))
@@ -76,12 +75,17 @@ class App(tk.Tk):
 
         custom_config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(image, config=custom_config)
-
-        best_match, score = process.extractOne(text, custom_words)
+        return self.findBestMatch(text)
+        
+    
+    def findBestMatch(self, cardName):
+        with open('cardAndFacesNames.txt', 'r') as file:
+            custom_words = [line.strip().lower() for line in file]
+        best_match, score = process.extractOne(cardName, custom_words)
         print(f"best match -> {best_match.replace('ã»', 'û')}")
         print(f"score here -> {score}")
-        print(f"Our text here!!--> {text}")
-        return best_match.replace('ã»', 'û')   
+        print(f"Our text here!!--> {cardName}")
+        return best_match.replace('ã»', 'û')
     
     def printCard(self, frame):
             p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
@@ -224,11 +228,12 @@ class ClonePage(tk.Frame):
         self.controller.printCard(Image.open(f'images/{self.controller.card1["mainCard"][0]}.jpg'))
 
     def getCard(self, cardName):
+        cardName = self.controller.findBestMatch(cardName)
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
             self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
             self.controller.card1 = card
-            image_path = f"images/{card['mainCard'][0]}.jpg"
+            image_path = f"images/{card['mainCard'][0]}.png"
             self.submitButton.config(state=tk.NORMAL)
         else:
             self.display_label1.config(text=f"{cardName} not found", fg="red")
@@ -271,7 +276,7 @@ class CombinePage(tk.Frame):
         cardLabel2.grid(row=1, column=4, columnspan=2, pady=10, padx=10)
 
         cameraButton2 = tk.Button(self, text="Take Picture",
-                           command=lambda: self.takePicture())
+                           command=lambda: self.takePicture2())
         cameraButton2.grid(row=2, column=4, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         self.entry2 = tk.Entry(self, textvariable=controller.input_text2)
@@ -296,7 +301,12 @@ class CombinePage(tk.Frame):
         cardName = self.controller.takePicture()
         self.getCard(cardName)
 
+    def takePicture2(self):
+        cardName = self.controller.takePicture()
+        self.getCard2(cardName)
+
     def getCard(self, cardName):
+        cardName = self.controller.findBestMatch(cardName)
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
             self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
@@ -308,6 +318,7 @@ class CombinePage(tk.Frame):
         print(card)
 
     def getCard2(self, cardName):
+        cardName = self.controller.findBestMatch(cardName)
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
             self.display_label2.config(text=f"{card['mainCard'][10]}", fg="green")
@@ -397,6 +408,7 @@ class CompanionPage(tk.Frame):
 
 
     def getCard(self, cardName):
+        cardName = self.controller.findBestMatch(cardName)
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
             self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")
@@ -499,6 +511,7 @@ class UpgradePage(tk.Frame):
 
 
     def getCard(self, cardName):
+        cardName = self.controller.findBestMatch(cardName)
         card = databaseAccessor.fetch_card_by_name(cardName)
         if card:
             self.display_label1.config(text=f"{card['mainCard'][10]}", fg="green")

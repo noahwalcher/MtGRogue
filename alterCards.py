@@ -55,10 +55,7 @@ flipsideTitleCoord = (27, 473)
 
 def printCard(frame):
     try:
-        p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.00, dsrdtr=True)
-        
-        # Flush any existing data in the serial buffer
-        p.flush()
+        p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=2.00, dsrdtr=True)
 
         width, height = frame.size
         frame = frame.crop((15, 0, width - 15, height))
@@ -76,7 +73,6 @@ def printCard(frame):
         except Exception as e:
             print(f"Error printing image: {e}")
 
-        p.flush()
         p.close()
 
     except Exception as e:
