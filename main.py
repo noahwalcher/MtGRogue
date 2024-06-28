@@ -489,8 +489,9 @@ class UpgradePage(tk.Frame):
         self.display_label1 = tk.Label(self, text="")
         self.display_label1.grid(row=3, column=1, columnspan=2, pady=10, padx=10)
 
-        self.upgradeLabel = tk.Label(self, text=self.upgrades[self.currentUpgradeIndex], font=('Arial', 16))
+        self.upgradeLabel = tk.Text(self, wrap='word', font=('Arial', 16), height=2, width=20)
         self.upgradeLabel.grid(row=4, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+        self.upgradeLabel.config(state=tk.DISABLED)
 
         self.prev_button = tk.Button(self, text='←', command=self.prevUpgrade)
         self.prev_button.grid(row=4, column=1, pady=10, padx=10, sticky="nsew")
@@ -556,7 +557,11 @@ class UpgradePage(tk.Frame):
         self.updateUpgradeLabel()
 
     def updateUpgradeLabel(self):
-        self.upgradeLabel.config(text=self.upgrades[self.currentUpgradeIndex])
+        self.upgradeLabel.config(state=tk.NORMAL)  # Enable editing
+        self.upgradeLabel.delete('1.0', tk.END)  # Clear existing text
+        self.upgradeLabel.insert(tk.END, self.upgrades[self.currentUpgradeIndex])  # Insert new text
+        self.upgradeLabel.config(state=tk.DISABLED)  # Disable editing to make it read-only
+
 
     def prevUpgrade(self):
         self.currentUpgradeIndex = (self.currentUpgradeIndex - 1) % len(self.upgrades)
