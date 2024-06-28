@@ -383,8 +383,9 @@ class CompanionPage(tk.Frame):
         self.display_label1 = tk.Label(self, text="")
         self.display_label1.grid(row=3, column=1, columnspan=2, pady=10, padx=10)
 
-        self.companionLabel = tk.Label(self, text=self.companions[self.currentCompanionIndex], font=('Arial', 16))
+        self.companionLabel = tk.Text(self, wrap='word', font=('Arial', 16), height=2, width=20)
         self.companionLabel.grid(row=4, column=2, columnspan=3, pady=10, padx=10, sticky="nsew")
+        self.companionLabel.config(state=tk.DISABLED)
 
         self.prev_button = tk.Button(self, text='←', command=self.prevCompanion)
         self.prev_button.grid(row=4, column=1, pady=10, padx=10, sticky="nsew")
@@ -444,7 +445,11 @@ class CompanionPage(tk.Frame):
         self.updateCompanionLabel()
 
     def updateCompanionLabel(self):
-        self.companionLabel.config(text=self.companions[self.currentCompanionIndex])
+        self.companionLabel.config(state=tk.NORMAL)  # Enable editing
+        self.companionLabel.delete('1.0', tk.END)  # Clear existing text
+        self.companionLabel.insert(tk.END, self.companions[self.currentCompanionIndex])  # Insert new text
+        self.companionLabel.config(state=tk.DISABLED)  # Disable editing to make it read-only
+
 
     def prevCompanion(self):
         self.currentCompanionIndex = (self.currentCompanionIndex - 1) % len(self.companions)
