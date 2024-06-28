@@ -39,6 +39,9 @@ class App(tk.Tk):
         self.rowconfigure(0, weight=1)
         self.show_frame("HomePage")
 
+    def toggle_fullscreen(self, event=None):
+        self.attributes('-fullscreen', not self.attributes('-fullscreen'))
+
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         self.input_text.set("")
