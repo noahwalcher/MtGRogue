@@ -14,7 +14,7 @@ class App(tk.Tk):
         super().__init__()
         self.title("Multi-Screen Application with Text Input")
         #self.geometry("800x480")
-        self.attributes('-fullscreen', True)  # Start in fullscreen mode
+        self.wm_attributes('-fullscreen', True)  # Start in fullscreen mode
         self.configure(background='black')  # Set background color if needed
         self.bind('<Escape>', self.toggle_fullscreen)
 

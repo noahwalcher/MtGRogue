@@ -2,9 +2,11 @@ import json
 import os
 import re
 import sqlite3
+import time
 from PIL import Image, ImageDraw, ImageFont
 import fetchAndPopulateDB
-from escpos.printer import Serial
+import RPi.GPIO as GPIO
+from escpos.printer import Serial, Usb
 
 
 titleFont = ImageFont.truetype("Fonts/beleren-bold_P1.01.ttf", size=20)
@@ -53,9 +55,12 @@ planeswalkerManaCoord = (347, 23, 17, 17)
 
 flipsideTitleCoord = (27, 473)
 
+
+
 def printCard(frame):
+
     try:
-        p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=2.00, dsrdtr=True)
+        p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N', stopbits=2, timeout=10.00, dsrdtr=True)
 
         width, height = frame.size
         frame = frame.crop((15, 0, width - 15, height))
@@ -66,7 +71,7 @@ def printCard(frame):
 
         # Try sending the image and capture any errors
         try:
-            p.image("1.bmp", impl="bitImageColumn")
+            p.image("1.bmp", impl="bitImageRaster")
             p.textln(" ")
             p.textln(" ")
             p.textln(" ")
@@ -364,7 +369,9 @@ def createRingCardObject(ability):
                 "mana_cost": "",
                 "cmc": "",
                 "type_line": "Ring",
-                "oracle_text": ability
+                "oracle_text": ability,
+                "power": "",
+                "toughness": ""
             }
 
 def createUpgradeCardObject(card, upgrade, id):
