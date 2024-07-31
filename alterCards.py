@@ -354,6 +354,8 @@ def createCardImage(card, framePath, titleCoord, typeCoord, textCoord, manaCoord
     elif ("Frames/Standard.png" == framePath) and not itFits:
         return createCardImage(card, "Frames/FullText.png", standardTitleCoord, fullTextTypeCoord, fullTextBodyCoord, standardManaCoord)
     else:
+        if ("Fuse" in framePath):
+            frame.rotate(270, expand=True)
         print("Saving")
         frame.save(f"images/{card['name']}.png")
         printCard(frame)

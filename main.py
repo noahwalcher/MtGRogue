@@ -91,10 +91,13 @@ class App(tk.Tk):
         print(f"best match -> {best_match.replace('ã»', 'û')}")
         print(f"score here -> {score}")
         print(f"Our text here!!--> {cardName}")
-        return best_match.replace('ã»', 'û')
+        if score >= 80:
+            return best_match.replace('ã»', 'û')
+        else:
+            return cardName
     
     def printCard(self, frame):
-            p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=1, timeout=1.00, dsrdtr=True)
+            p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=2, timeout=10.00, dsrdtr=True)
             width, height = frame.size
             frame = frame.crop((15, 0, width - 15, height))
             frame.convert('L')

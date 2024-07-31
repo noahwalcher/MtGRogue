@@ -1,158 +1,110 @@
-Agadeem's Awakening
-Agadeem, the Undercrypt 
-Ancient Tomb 
-Archfiend of Ifnir 
-Archfiend of Sorrows 
-Ash Barrens 
-Barren Moor 
-Bastion of Remembrance 
-Bitterblossom 
-Black Market Connections 
-Blast Zone 
-Blood Artist 
-Blood Fountain 
-Bloodsoaked Champion 
-Bojuka Bog 
-Bolas's Citadel 
-Bone Miser 
-Bone Shards 
-Bridge from Below 
-Buried Ruin 
-Cabal Coffers 
-Call to the Grave 
-Carrion Feeder 
-Castle Locthwain 
-Cauldron Familiar 
-Cemetery Reaper 
-Chronomancer 
-Cranial Plating 
-Crippling Fatigue 
-Crypt Ghast 
-Cryptbreaker 
-Currency Converter 
-Dakmor Salvage 
-Damnation 
-Dark Confidant 
-Dark Depths 
-Dark Ritual 
-Darksteel Citadel 
-Deadly Dispute 
-Death's Shadow 
-Demonic Tutor 
-Desert of the Glorified 
-Dismember 
-Doom Whisperer 
-Dread Presence 
-Dread Return 
-Dreadhorde Invasion 
-Drownyard Temple 
-Easy Prey 
-Empty the Pits 
-Executioner's Capsule 
-Exquisite Blood 
-Fabled Passage 
-Fain, the Broker 
-Fanatical Offering 
-Feed the Swarm 
-Field of the Dead 
-Fleshbag Marauder 
-Geier Reach Sanitarium 
-Gisa, the Hellraiser 
-Gravecrawler 
-Gray Merchant of Asphodel 
-Griselbrand 
+Archfiend of Ifnir
+Black Market Connections
+Blood Artist
+Bolas's Citadel
+Bone Miser
+Cabal Coffers
+Castle Locthwain
+Currency Converter
+Damnation
+Death's Shadow
+Dismember
+Dread Return
+Exquisite Blood
+Fell the Profane
+Fell Mire
+Gisa, the Hellraiser
+God-Pharaoh's Gift
+Gray Merchant of Asphodel
 Gumdrop Poisoner
-Tempt with Treats 
-Gurmag Angler 
-Gutterbones 
-Herald of Anguish 
-Hive of the Eye Tyrant 
-Hollow One 
-Horror of the Broken Lands 
-Ifnir Deadlands 
-Imp's Mischief 
-Infernal Grasp 
-Inkmoth Nexus 
-Inventors' Fair 
-Jadar, Ghoulcaller of Nephalia 
-Jerren, Corrupted Bishop
-Ormendahl, the Corrupter 
-Karn's Bastion 
-Liliana, Death's Majesty 
-Living Death 
-Living End 
-Lurrus of the Dream-Den 
-Marionette Master 
-Mirkwood Bats 
-Mishra's Factory 
-Mox Jet 
-Murderous Cut 
+Tempt with Treats
+Infernal Grasp
+Jadar, Ghoulcaller of Nephalia
+Karn, Scion of Urza
+Liliana, Death's Majesty
+Lurrus of the Dream-Den
 Murderous Rider
-Swift End 
-Necron Deathmark 
-Necropotence 
-Nettlecyst 
-Night's Whisper 
-Noxious Gearhulk 
-Nykthos, Shrine to Nyx 
-Persist 
-Phyrexian Altar 
-Phyrexian Scriptures 
-Phyrexian Tower 
-Pile On 
-Pitiless Plunderer 
-Plaguecrafter 
-Polluted Mire 
-Pox 
-Priest of Forgotten Gods 
-Putrid Imp 
-Reanimate 
-Reliquary Tower 
-Sanguine Bond 
-Scourge of the Skyclaves 
-Scrap Trawler 
-Scrapheap Scrounger 
-Sensei's Divining Top 
-Shadow of Mortality 
-Sign in Blood 
-Solemn Simulacrum 
+Swift End
+Nettlecyst
+Noxious Gearhulk
+Smuggler's Copter
 Sorin of House Markov
-Sorin, Ravenous Neonate 
-Spawn of Mayhem 
-Stinkweed Imp 
-Stitcher's Supplier 
-Street Wraith 
-Takenuma, Abandoned Mire 
-The Meathook Massacre 
-Tomb Fortress 
-Torment of Hailfire 
-Toxic Deluge 
-Troll of Khazad-dûm 
-Tymaret Calls the Dead 
-Unearth 
-Unholy Grotto 
-Urborg, Tomb of Yawgmoth 
-Vampire Scrivener 
-Vampiric Tutor 
-Vault of Whispers 
-Veinwitch Coven 
-Victimize 
-Virtue of Persistence
-Locthwain Scorn 
-Vito, Thorn of the Dusk Rose 
-Void Beckoner 
+Sorin, Ravenous Neonate
+Spawn of Mayhem
+Spymaster's Vault
+Takenuma, Abandoned Mire
+Toxic Deluge
+Vito, Thorn of the Dusk Rose
 Voldaren Bloodcaster
-Bloodbat Summoner 
-Wayfarer's Bauble 
-Westvale Abbey
-Ormendahl, Profane Prince 
-Whip of Erebos 
-Witch's Cottage 
-Witch's Oven 
-Woe Strider 
-Yawgmoth's Will 
-Yawgmoth, Thran Physician 
-Zulaport Cutthroat
+Bloodbat Summoner
+Warren Soultrader
+Whip of Erebos
+Woe Strider
+Yawgmoth, Thran Physician
+Ancient Tomb
+Dark Ritual
+Demonic Tutor
+Griselbrand
+Mox Jet
+Necropotence
+Nykthos, Shrine to Nyx
+Phyrexian Tower
+Reanimate
+Sensei's Divining Top
+The Meathook Massacre
+Vampiric Tutor
+Virtue of Persistence
+Locthwain Scorn
+Archfiend of Sorrows
+Barren Moor
+Bastion of Remembrance
+Blood Fountain
+Bloodsoaked Champion
+Bone Shards
+Buried Ruin
+Carrion Feeder
+Cauldron Familiar
+Cemetery Reaper
+Chronomancer
+Cranial Plating
+Crippling Fatigue
+Cryptbreaker
+Dakmor Salvage
+Dreadhorde Invasion
+Easy Prey
+Eviscerator's Insight
+Executioner's Capsule
+Fain, the Broker
+Fanatical Offering
+Feed the Swarm
+Fleshbag Marauder
+Foul Play
+Gravecrawler
+Gurmag Angler
+Horror of the Broken Lands
+Marionette Apprentice
+Marionette Master
+Mirkwood Bats
+Mishra's Factory
+Murderous Cut
+Night's Whisper
+Pitiless Plunderer
+Priest of Forgotten Gods
+Reassembling Skeleton
+Scourge of the Skyclaves
+Scrapheap Scrounger
+Solemn Simulacrum
+Stitcher's Supplier
+Tomb Fortress
+Troll of Khazad-dûm
+Tymaret Calls the Dead
+Unearth
+Unshakable Tail
+Vampire Scrivener
+Vault of Whispers
+Veinwitch Coven
+Wayfarer's Bauble
+Witch's Oven
 Cabal Evangel
 Graf Harvest
 Gravedigger
@@ -170,4 +122,3 @@ Swamp
 Ulcerate
 Undead Gladiator
 Walking Corpse
-
