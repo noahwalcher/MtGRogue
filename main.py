@@ -97,7 +97,7 @@ class App(tk.Tk):
             return cardName
     
     def printCard(self, frame):
-            p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=2, timeout=10.00, dsrdtr=True)
+            p = Serial(devfile='/dev/serial0', baudrate=9600, bytesize=8, parity='N',stopbits=2, timeout=20.00, dsrdtr=True)
             width, height = frame.size
             frame = frame.crop((15, 0, width - 15, height))
             frame.convert('L')
@@ -105,7 +105,7 @@ class App(tk.Tk):
             frame = frame.convert('1', dither=Image.NONE)
             frame.save("1.bmp")
             
-            p.image("1.bmp", impl="bitImageColumn")
+            p.image("1.bmp", impl="bitImageRaster")
             p.textln(" ")
             p.textln(" ")
             p.textln(" ")
